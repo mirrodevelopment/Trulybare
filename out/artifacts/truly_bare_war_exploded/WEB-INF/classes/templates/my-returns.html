@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Returns | Truly Bare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <style>
+        body { background: #FAF8F5; }
+        .returns-container { max-width: 860px; margin: 40px auto 80px; padding: 0 20px; }
+        .back-link { display:inline-flex;align-items:center;gap:8px;color:#C9A84C;text-decoration:none;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:28px;transition:gap .3s; }
+        .back-link:hover { gap:14px; }
+        .page-title { font-family:var(--font-display);font-size:34px;color:#1c1c1c;margin-bottom:6px; }
+        .page-sub { font-size:14px;color:#9C8875;font-style:italic;margin-bottom:32px; }
+
+        .return-card {
+            background:#fff;border-radius:20px;padding:24px;margin-bottom:20px;
+            border:1px solid rgba(201,168,76,0.2);box-shadow:0 4px 20px rgba(0,0,0,0.04);
+            transition:transform 0.2s,box-shadow 0.2s;
+        }
+        .return-card:hover { transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.07); }
+
+        .return-header { display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px; }
+        .return-id { font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:#8B1A1A; }
+        .return-order { font-size:12px;color:#9C8875;margin-top:2px; }
+
+        .status-chip {
+            padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;
+            text-transform:uppercase;letter-spacing:1px;
+        }
+        .chip-pending { background:#fef3c7;color:#92400e; }
+        .chip-approved { background:#d1fae5;color:#065f46; }
+        .chip-rejected { background:#fee2e2;color:#991b1b; }
+        .chip-refund { background:#dbeafe;color:#1e40af; }
+        .chip-completed { background:#d1fae5;color:#065f46; }
+        .chip-processing { background:#ede9fe;color:#5b21b6; }
+
+        .return-meta { display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px; }
+        .meta-item { font-size:12px;color:#9C8875; }
+        .meta-item strong { color:#1c1c1c; }
+
+        .return-progress { display:flex;gap:0;margin-bottom:16px; }
+        .progress-step { flex:1;text-align:center;position:relative; }
+        .progress-step::before { content:'';position:absolute;top:11px;left:50%;right:-50%;height:2px;background:#e0e0e0;z-index:0; }
+        .progress-step:last-child::before { display:none; }
+        .p-dot { width:24px;height:24px;border-radius:50%;margin:0 auto 6px;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700; }
+        .p-dot.done { background:#22c55e;color:#fff; }
+        .p-dot.active { background:#C9A84C;color:#fff; }
+        .p-dot.idle { background:#e5e7eb;color:#9ca3af; }
+        .p-dot.fail { background:#ef4444;color:#fff; }
+        .p-label { font-size:9px;color:#9C8875;text-transform:uppercase;letter-spacing:0.5px; }
+
+        .return-actions { display:flex;gap:10px;flex-wrap:wrap;margin-top:14px; }
+        .btn-chat { display:inline-flex;align-items:center;gap:8px;padding:9px 20px;background:#8B1A1A;color:#fff;border-radius:30px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all .25s; }
+        .btn-chat:hover { background:#6b1212;transform:translateY(-1px); }
+        .btn-outline-dark { display:inline-flex;align-items:center;gap:8px;padding:9px 20px;background:#fff;color:#1c1c1c;border:1.5px solid #1c1c1c;border-radius:30px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all .25s; }
+        .btn-outline-dark:hover { background:#1c1c1c;color:#fff; }
+
+        .empty-state { text-align:center;padding:80px 0; }
+        .empty-icon { font-size:50px;margin-bottom:16px; }
+        .empty-title { font-size:20px;font-weight:700;color:#1c1c1c;margin-bottom:8px; }
+        .empty-sub { font-size:14px;color:#9C8875; }
+    </style>
+</head>
+<body>
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <div class="returns-container">
+        <a th:href="@{/order-history}" class="back-link"><i class="bi bi-arrow-left"></i> Back</a>
+        <h1 class="page-title">My <i>Returns</i></h1>
+        <p class="page-sub">Track your return and replacement requests.</p>
+
+        <div th:if="${returns.isEmpty()}" class="empty-state">
+            <div class="empty-icon">📦</div>
+            <div class="empty-title">No return requests yet</div>
+            <div class="empty-sub">If you've received a damaged or incorrect item, you can request a return from your order history.</div>
+            <a th:href="@{/order-history}" class="btn-chat" style="margin-top:24px;display:inline-flex;">View Orders</a>
+        </div>
+
+        <div th:each="rr : ${returns}" class="return-card">
+            <div class="return-header">
+                <div>
+                    <div class="return-id" th:text="'RET-' + ${#numbers.formatInteger(rr.id, 3)}">RET-001</div>
+                    <div class="return-order" th:text="'Order: ' + ${rr.order.orderNumber}">TB-ORD-0000</div>
+                </div>
+                <span th:with="s=${rr.status.name()}"
+                      th:class="${s.contains('PENDING') ? 'status-chip chip-pending' :
+                                  s == 'APPROVED' ? 'status-chip chip-approved' :
+                                  s == 'REJECTED' ? 'status-chip chip-rejected' :
+                                  s.contains('REFUND') ? 'status-chip chip-refund' :
+                                  s == 'COMPLETED' ? 'status-chip chip-completed' :
+                                  s.contains('REPLACEMENT') ? 'status-chip chip-processing' :
+                                  'status-chip chip-pending'}"
+                      th:text="${rr.status.name().replace('_', ' ')}">STATUS</span>
+            </div>
+
+            <div class="return-meta">
+                <div class="meta-item">Type: <strong th:text="${rr.returnType == 'REPLACEMENT' ? 'Replacement' : 'Return & Refund'}"></strong></div>
+                <div class="meta-item">Reason: <strong th:text="${rr.reason}"></strong></div>
+                <div class="meta-item" th:if="${rr.productName != null}">Product: <strong th:text="${rr.productName}"></strong></div>
+                <div class="meta-item" th:if="${rr.refundAmount != null}">Refund: <strong style="color:#16a34a;" th:text="'₹' + ${rr.refundAmount}"></strong></div>
+                <div class="meta-item">Submitted: <strong th:text="${#temporals.format(rr.createdAt,'dd MMM yyyy')}"></strong></div>
+            </div>
+
+            <!-- Mini progress -->
+            <div class="return-progress">
+                <th:block th:with="s=${rr.status.name()}">
+                    <div class="progress-step">
+                        <div class="p-dot done">✓</div>
+                        <div class="p-label">Submitted</div>
+                    </div>
+                    <div class="progress-step">
+                        <div th:class="${s == 'UNDER_REVIEW' ? 'p-dot active' :
+                                         (s == 'APPROVED' or s.contains('REFUND') or s.contains('REPLACEMENT') or s == 'COMPLETED' or s == 'REJECTED') ? 'p-dot done' : 'p-dot idle'}">
+                            <span th:text="${s == 'UNDER_REVIEW' ? '…' : (s == 'APPROVED' or s.contains('REFUND') or s.contains('REPLACEMENT') or s == 'COMPLETED' or s == 'REJECTED') ? '✓' : '·'}"></span>
+                        </div>
+                        <div class="p-label">Reviewed</div>
+                    </div>
+                    <div class="progress-step">
+                        <div th:class="${s == 'REJECTED' ? 'p-dot fail' :
+                                         (s == 'APPROVED' or s.contains('REFUND') or s.contains('REPLACEMENT') or s == 'COMPLETED') ? 'p-dot done' : 'p-dot idle'}">
+                            <span th:text="${s == 'REJECTED' ? '✕' : (s == 'APPROVED' or s.contains('REFUND') or s.contains('REPLACEMENT') or s == 'COMPLETED') ? '✓' : '·'}"></span>
+                        </div>
+                        <div th:text="${s == 'REJECTED' ? 'Rejected' : 'Approved'}" class="p-label">Approved</div>
+                    </div>
+                    <div class="progress-step">
+                        <div th:class="${s == 'REFUND_INITIATED' ? 'p-dot active' :
+                                         s == 'REFUND_FAILED' ? 'p-dot fail' :
+                                         (s == 'REFUND_COMPLETED' or s == 'COMPLETED' or s == 'REPLACEMENT_PROCESSING') ? 'p-dot done' : 'p-dot idle'}">
+                            <span th:text="${s == 'REFUND_INITIATED' ? '⟳' : s == 'REFUND_FAILED' ? '✕' : (s == 'REFUND_COMPLETED' or s == 'COMPLETED' or s == 'REPLACEMENT_PROCESSING') ? '✓' : '·'}"></span>
+                        </div>
+                        <div class="p-label">Processing</div>
+                    </div>
+                    <div class="progress-step">
+                        <div th:class="${(s == 'COMPLETED' or s == 'REFUND_COMPLETED') ? 'p-dot done' : 'p-dot idle'}">
+                            <span th:text="${(s == 'COMPLETED' or s == 'REFUND_COMPLETED') ? '✓' : '·'}"></span>
+                        </div>
+                        <div class="p-label">Done</div>
+                    </div>
+                </th:block>
+            </div>
+
+            <!-- Admin remark -->
+            <div th:if="${rr.adminRemarks != null and !rr.adminRemarks.isBlank()}"
+                 style="background:rgba(92,61,46,0.06);border:1px solid rgba(92,61,46,0.15);border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:12px;">
+                <strong style="color:#5c3d2e;">Support note:</strong>
+                <span th:text="${rr.adminRemarks}" style="color:#555;"></span>
+            </div>
+
+            <div class="return-actions">
+                <a th:href="@{'/return/chat/' + ${rr.id}}" class="btn-chat">
+                    <i class="bi bi-chat-dots"></i> Open Chat
+                    <span th:if="${#lists.size(rr.messages) > 0}"
+                          style="background:rgba(255,255,255,0.25);border-radius:10px;padding:0 6px;"
+                          th:text="${#lists.size(rr.messages)}"></span>
+                </a>
+                <a th:href="@{'/order-history'}" class="btn-outline-dark">
+                    <i class="bi bi-bag"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/home.js}"></script>
+</body>
+</html>

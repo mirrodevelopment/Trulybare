@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ========================================================
+     ADMIN LAYOUT FRAGMENT — included by all admin pages
+     Usage: th:replace="~{admin/layout :: sidebar(activeMenu='products')}"
+     ======================================================== -->
+
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="${pageTitle} + ' — Truly Bare Admin'">Admin — Truly Bare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"/>
+    <style>
+        /* ── BRAND TOKENS ── */
+        :root {
+            --pale-white:    #FAF8F5;
+            --off-white:     #F4F0EB;
+            --cream:         #EDE8DF;
+            --gold:          #C9A84C;
+            --gold-light:    #E0C97A;
+            --gold-faint:    rgba(201,168,76,0.12);
+            --garnet:        #8B1A1A;
+            --garnet-light:  #B02525;
+            --garnet-faint:  rgba(139,26,26,0.08);
+            --bark:          #5C3D2E;
+            --bark-light:    #8B6048;
+            --text-dark:     #1C1C1A;
+            --text-medium:   #4A4845;
+            --text-muted:    #888880;
+            --border:        rgba(201,168,76,0.2);
+            --border-light:  rgba(201,168,76,0.12);
+            --surface:       rgba(255,255,255,0.72);
+            --surface-hover: rgba(255,255,255,0.9);
+            --glass-shadow:  0 4px 24px rgba(92,61,46,0.10);
+            --font-serif:    'Cormorant Garamond', serif;
+            --font-display:  'Cinzel Decorative', serif;
+            --font-sans:     'Inter', sans-serif;
+            --sidebar-w:     220px;
+            --green:         #2E7D32;
+            --green-faint:   rgba(46,125,50,0.10);
+            --red:           #C0392B;
+            --red-faint:     rgba(192,57,43,0.10);
+            --amber:         #B5840A;
+            --amber-faint:   rgba(181,132,10,0.10);
+            --blue:          #1A5276;
+            --blue-faint:    rgba(26,82,118,0.10);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--off-white);
+            color: var(--text-dark);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── SUBTLE BACKGROUND TINT (no stacking context) ── */
+        body {
+            background:
+                radial-gradient(ellipse 60% 50% at 5% 10%, rgba(201,168,76,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 95% 90%, rgba(139,26,26,0.04) 0%, transparent 60%),
+                #F4F0EB;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: #FFFFFF;
+            border-right: 2px solid rgba(201,168,76,0.18);
+            height: 100vh;
+            position: fixed;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 200;
+            box-shadow: 3px 0 16px rgba(92,61,46,0.08);
+        }
+
+        .sidebar-brand {
+            padding: 28px 22px 22px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-brand .logo {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .sidebar-brand .logo-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            object-fit: contain;
+            flex-shrink: 0;
+            background: var(--pale-white);
+            border: 1px solid var(--border);
+            padding: 4px;
+        }
+        .sidebar-brand .logo-text {
+            font-family: var(--font-serif);
+            font-size: 16px; font-weight: 600; letter-spacing: 2px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+        .sidebar-brand .logo-sub {
+            font-size: 10px; color: var(--text-muted); margin-top: 1px;
+            letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400;
+        }
+
+        .sidebar-nav { padding: 14px 12px; flex: 1; }
+        .sidebar-nav .nav-section {
+            font-size: 9px; font-weight: 600; color: var(--text-muted);
+            letter-spacing: 2px; text-transform: uppercase;
+            padding: 12px 10px 6px;
+        }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-medium);
+            text-decoration: none;
+            font-size: 13.5px; font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+            letter-spacing: 0.2px;
+        }
+        .sidebar-nav a:hover {
+            background: rgba(201,168,76,0.10);
+            color: var(--text-dark);
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, rgba(139,26,26,0.10), rgba(201,168,76,0.08));
+            color: var(--garnet);
+            border-left: 2px solid var(--garnet);
+            padding-left: 10px;
+            font-weight: 600;
+        }
+        .sidebar-nav a .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav .badge {
+            margin-left: auto;
+            background: var(--garnet);
+            color: #fff;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 7px; border-radius: 10px;
+        }
+
+        .sidebar-footer {
+            padding: 18px 22px;
+            border-top: 1px solid var(--border);
+        }
+        .sidebar-footer a {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none; font-size: 13px;
+            transition: color 0.2s;
+        }
+        .sidebar-footer a:hover { color: var(--garnet); }
+        .sidebar-footer a i { font-size: 15px; }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            width: calc(100% - var(--sidebar-w));
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .topbar {
+            background: #FFFFFF;
+            border-bottom: 2px solid rgba(201,168,76,0.15);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 50;
+            box-shadow: 0 2px 8px rgba(92,61,46,0.06);
+        }
+        .topbar .page-title {
+            font-family: var(--font-serif);
+            font-size: 20px; font-weight: 600;
+            color: var(--text-dark); letter-spacing: 0.5px;
+        }
+        .topbar .admin-badge {
+            display: flex; align-items: center; gap: 10px;
+            color: var(--text-muted); font-size: 13px;
+        }
+        .topbar .admin-avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(139,26,26,0.1);
+        }
+
+        .content-area { padding: 24px 16px; flex: 1; }
+
+        /* ── FLASH MESSAGES ── */
+        .flash-success {
+            background: var(--green-faint);
+            border: 1px solid rgba(46,125,50,0.25);
+            color: var(--green);
+            padding: 13px 18px; border-radius: 10px; margin-bottom: 24px;
+            font-size: 14px; display: flex; align-items: center; gap: 10px;
+            font-weight: 500;
+        }
+        .flash-error {
+            background: var(--red-faint);
+            border: 1px solid rgba(192,57,43,0.25);
+            color: var(--red);
+            padding: 13px 18px; border-radius: 10px; margin-bottom: 24px;
+            font-size: 14px; display: flex; align-items: center; gap: 10px;
+            font-weight: 500;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: #FFFFFF;
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(92,61,46,0.07);
+        }
+        .card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(201,168,76,0.12);
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(250,248,245,0.5);
+        }
+        .card-header h2 {
+            font-family: var(--font-serif);
+            font-size: 16px; font-weight: 600; letter-spacing: 0.5px;
+            color: var(--text-dark);
+        }
+        .card-body { padding: 22px; }
+
+        /* ── STAT CARDS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.82);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 12px rgba(92,61,46,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(92,61,46,0.10); }
+        .stat-card .stat-icon { font-size: 22px; margin-bottom: 14px; }
+        .stat-card .stat-value {
+            font-family: var(--font-serif);
+            font-size: 28px; font-weight: 600; color: var(--text-dark);
+        }
+        .stat-card .stat-label {
+            font-size: 11px; color: var(--text-muted); margin-top: 5px;
+            font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .stat-card.accent  { border-color: rgba(201,168,76,0.35); background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(255,255,255,0.82)); }
+        .stat-card.danger  { border-color: rgba(192,57,43,0.25);  background: linear-gradient(135deg, rgba(192,57,43,0.06), rgba(255,255,255,0.82)); }
+        .stat-card.warn    { border-color: rgba(181,132,10,0.25); background: linear-gradient(135deg, rgba(181,132,10,0.06), rgba(255,255,255,0.82)); }
+        .stat-card.success { border-color: rgba(46,125,50,0.25);  background: linear-gradient(135deg, rgba(46,125,50,0.06), rgba(255,255,255,0.82)); }
+
+        /* ── TABLE ── */
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table thead th {
+            text-align: left;
+            font-size: 9px; font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 8px 8px;
+            background: rgba(250,248,245,0.8);
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+        }
+        .admin-table tbody tr {
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.15s;
+        }
+        .admin-table tbody tr:last-child { border-bottom: none; }
+        .admin-table tbody tr:hover { background: rgba(201,168,76,0.05); }
+        .admin-table td {
+            padding: 8px 8px; font-size: 11.5px;
+            color: var(--text-dark); vertical-align: middle;
+        }
+        .admin-table td.muted { color: var(--text-muted); }
+
+        /* ── BADGES ── */
+        .badge-status {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px;
+        }
+        .badge-status.green  { background: var(--green-faint);  color: var(--green); }
+        .badge-status.red    { background: var(--red-faint);    color: var(--red); }
+        .badge-status.yellow { background: var(--amber-faint);  color: var(--amber); }
+        .badge-status.blue   { background: var(--blue-faint);   color: var(--blue); }
+        .badge-status.gray   { background: rgba(100,100,100,0.08); color: var(--text-muted); }
+        .badge-status.gold   { background: var(--gold-faint);   color: var(--bark); }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 16px; border-radius: 8px;
+            font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+            cursor: pointer; border: none; text-decoration: none;
+            transition: all 0.2s ease;
+            letter-spacing: 0.2px;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--garnet), var(--garnet-light));
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(139,26,26,0.2);
+        }
+        .btn-primary:hover { opacity: 0.88; box-shadow: 0 6px 16px rgba(139,26,26,0.28); }
+
+        .btn-success {
+            background: var(--green-faint); color: var(--green);
+            border: 1px solid rgba(46,125,50,0.2);
+        }
+        .btn-success:hover { background: rgba(46,125,50,0.16); }
+
+        .btn-danger {
+            background: var(--red-faint); color: var(--red);
+            border: 1px solid rgba(192,57,43,0.2);
+        }
+        .btn-danger:hover { background: rgba(192,57,43,0.16); }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-medium);
+        }
+        .btn-outline:hover { background: var(--gold-faint); border-color: var(--gold); color: var(--bark); }
+
+        .btn-warning {
+            background: var(--amber-faint); color: var(--amber);
+            border: 1px solid rgba(181,132,10,0.2);
+        }
+        .btn-warning:hover { background: rgba(181,132,10,0.16); }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            color: var(--text-dark);
+            box-shadow: 0 4px 12px rgba(201,168,76,0.2);
+        }
+        .btn-gold:hover { opacity: 0.88; }
+
+        .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+        /* ── FORMS ── */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+        .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .form-group { display: flex; flex-direction: column; gap: 7px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label {
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(201,168,76,0.25);
+            border-radius: 8px;
+            color: var(--text-dark);
+            font-family: var(--font-sans);
+            font-size: 14px; font-weight: 400;
+            padding: 11px 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+        }
+        .form-group select option { background: #FAF8F5; color: var(--text-dark); }
+        .form-group textarea { resize: vertical; min-height: 90px; }
+
+        /* ── SELECT in table ── */
+        select.inline-select {
+            padding: 6px 10px;
+            border-radius: 7px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(201,168,76,0.25);
+            color: var(--text-dark);
+            font-size: 12.5px;
+            outline: none;
+            cursor: pointer;
+        }
+        select.inline-select:focus { border-color: var(--gold); }
+
+        /* ── FILTER TABS ── */
+        .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+        .filter-tab {
+            padding: 7px 16px; border-radius: 20px;
+            font-size: 12.5px; font-weight: 500;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--border); text-decoration: none;
+            transition: all 0.2s;
+        }
+        .filter-tab:hover  { color: var(--text-dark); border-color: var(--gold); }
+        .filter-tab.active { background: var(--garnet); color: #fff; border-color: var(--garnet); box-shadow: 0 2px 8px rgba(139,26,26,0.18); }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(28,28,26,0.6); backdrop-filter: blur(6px);
+            z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: var(--pale-white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%; max-width: 500px;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(28,28,26,0.2);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+        .modal-header h3 { font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--text-dark); }
+        .modal-close { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px; }
+        .modal-close:hover { color: var(--garnet); }
+
+        /* ── STOCK INDICATOR ── */
+        .stock-bar-wrap { display: flex; align-items: center; gap: 8px; }
+        .stock-bar { height: 5px; background: var(--cream); border-radius: 3px; flex: 1; overflow: hidden; }
+        .stock-bar-fill { height: 100%; border-radius: 3px; }
+        .stock-bar-fill.high   { background: var(--green); }
+        .stock-bar-fill.medium { background: var(--amber); }
+        .stock-bar-fill.low    { background: var(--red); }
+
+        /* ── GOLD DIVIDER ── */
+        .gold-rule {
+            border: none; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 24px 0;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--cream); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(201,168,76,0.3); }
+
+        /* ── EMPTY STATES ── */
+        .empty-state-block {
+            padding: 60px 20px; text-align: center; color: var(--text-muted);
+        }
+        .empty-state-block .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.45; }
+        .empty-state-block .empty-title {
+            font-family: var(--font-serif); font-size: 18px;
+            color: var(--text-dark); margin-bottom: 6px;
+        }
+        .empty-state-block .empty-sub { font-size: 13px; }
+
+        /* ── TOPBAR HELPERS ── */
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+        .stat-pill {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.7); border: 1px solid var(--border);
+            border-radius: 20px; padding: 6px 14px;
+            font-size: 12.5px; font-weight: 500; color: var(--text-medium);
+        }
+
+        /* ── TABLE UTILITIES ── */
+        .status-update-form { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+        .order-num {
+            font-family: var(--font-serif); font-weight: 600;
+            color: var(--garnet); font-size: 12px; letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* ── CUSTOMER CELL ── */
+        .customer-cell { display: flex; align-items: center; gap: 8px; max-width: 160px; }
+        .customer-avatar {
+            width: 28px; height: 28px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--garnet), var(--bark));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-serif); font-size: 14px; font-weight: 600; color: #fff;
+        }
+        .customer-info { display: flex; flex-direction: column; overflow: hidden; }
+        .customer-name { font-weight: 600; font-size: 12.5px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .customer-email { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ── PRODUCT IMG STACK ── */
+        .product-img-stack { display: flex; align-items: center; margin-bottom: 3px; }
+        .product-img-chip { position: relative; display: inline-flex; }
+        .product-img-chip img {
+            width: 36px; height: 36px; border-radius: 8px;
+            object-fit: cover; border: 2px solid rgba(255,255,255,0.9);
+            box-shadow: 0 2px 6px rgba(92,61,46,0.12);
+            margin-right: -8px; transition: transform 0.2s;
+        }
+        .product-img-chip img:hover { transform: scale(1.15) translateY(-3px); z-index: 5; }
+        .chip-qty {
+            position: absolute; bottom: -2px; right: 4px;
+            background: var(--garnet); color: #fff;
+            font-size: 8px; font-weight: 700;
+            padding: 1px 3px; border-radius: 5px; line-height: 1.4;
+        }
+        .more-chips {
+            width: 32px; height: 36px;
+            background: var(--gold-faint); border: 2px solid var(--border);
+            border-radius: 8px; margin-left: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--bark);
+        }
+        .item-count { font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px; }
+        .amount-cell {
+            font-family: var(--font-serif); font-weight: 600;
+            font-size: 14px; color: var(--text-dark);
+        }
+
+        /* ── PAYMENT METHOD BADGES ── */
+        .method-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        .method-badge.cod {
+            background: rgba(181,132,10,0.10);
+            color: var(--amber);
+            border: 1px solid rgba(181,132,10,0.2);
+        }
+        .method-badge.online {
+            background: rgba(26,82,118,0.08);
+            color: var(--blue);
+            border: 1px solid rgba(26,82,118,0.15);
+        }
+        /* COD auto-pay hint */
+        .cod-hint {
+            margin-top: 5px;
+            font-size: 10.5px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 4px;
+        }
+        .cod-hint i { color: var(--gold); }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+            .form-grid { grid-template-columns: 1fr; }
+            .content-area { padding: 20px; }
+        }
+    </style>
+    <script>
+        (function() {
+            let refreshTimer;
+            const refreshInterval = 60000; // 60 seconds
+
+            function resetTimer() {
+                clearTimeout(refreshTimer);
+                refreshTimer = setTimeout(() => {
+                    const activeEl = document.activeElement;
+                    const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+                    
+                    // Check if any modal is open (common glitch source)
+                    const isModalOpen = document.querySelector('.modal.show') || document.querySelector('.modal-backdrop');
+
+                    if (!isTyping && !isModalOpen) {
+                        location.reload();
+                    } else {
+                        resetTimer(); 
+                    }
+                }, refreshInterval);
+            }
+
+            ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(evt => {
+                document.addEventListener(evt, resetTimer, { passive: true });
+            });
+            window.addEventListener('load', resetTimer);
+
+            // Global Logout Confirmation
+            document.addEventListener('click', (e) => {
+                const logoutLink = e.target.closest('a[href*="/logout"]');
+                if (logoutLink) {
+                    e.preventDefault();
+                    if (typeof openTBConfirm === 'function') {
+                        openTBConfirm({
+                            title: 'End Session?',
+                            text: 'Are you sure you wish to sign out of the Truly Bare Admin Console?',
+                            icon: 'bi-box-arrow-right',
+                            confirmText: 'Sign Out',
+                            onConfirm: () => { window.location.href = logoutLink.href; }
+                        });
+                    } else {
+                        if (window.confirm('Are you sure you wish to sign out of the Admin Console?')) {
+                            window.location.href = logoutLink.href;
+                        }
+                    }
+                }
+            });
+        })();
+    </script>
+    <style>
+        .btn-outline-red {
+            background: transparent;
+            border: 1.5px solid #FFCDD2;
+            color: #D32F2F;
+        }
+        .btn-outline-red:hover {
+            background: #D32F2F;
+            color: white;
+            border-color: #D32F2F;
+        }
+        .btn-outline-green {
+            background: transparent;
+            border: 1.5px solid #C8E6C9;
+            color: #2E7D32;
+        }
+        .btn-outline-green:hover {
+            background: #2E7D32;
+            color: white;
+            border-color: #2E7D32;
+        }
+    </style>
+</head>
+
+<!-- ── SIDEBAR FRAGMENT ── -->
+<div th:fragment="sidebar(activeMenu)" class="sidebar">
+    <!-- Truly Bare Confirmation Pop for Admin -->
+    <div id="tbConfirmPop" class="logout-pop-overlay">
+        <div class="logout-pop-backdrop" onclick="closeTBConfirm()"></div>
+        <div class="logout-pop-content">
+            <div class="logout-pop-icon" id="tbConfirmIcon">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <h3 class="logout-pop-title" id="tbConfirmTitle">Are you sure?</h3>
+            <p class="logout-pop-text" id="tbConfirmText">Please confirm your selection to proceed.</p>
+            <div class="logout-pop-actions">
+                <button class="btn-pop-stay" onclick="closeTBConfirm()">Cancel</button>
+                <button id="tbConfirmActionBtn" class="btn-pop-leave">Confirm</button>
+            </div>
+        </div>
+        <style>
+            .logout-pop-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 10000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+            }
+            .logout-pop-overlay.active {
+                display: flex;
+            }
+            .logout-pop-backdrop {
+                position: absolute;
+                inset: 0;
+                background: rgba(28, 28, 26, 0.4);
+                backdrop-filter: blur(8px);
+                animation: fadeIn 0.4s ease;
+            }
+            .logout-pop-content {
+                position: relative;
+                width: 100%;
+                max-width: 400px;
+                background: #FFFFFF;
+                border-radius: 24px;
+                padding: 40px 32px;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+                border: 1px solid rgba(201, 168, 76, 0.15);
+                animation: popIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            .logout-pop-icon {
+                width: 64px;
+                height: 64px;
+                background: rgba(139, 26, 26, 0.05);
+                color: #8B1A1A;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                margin: 0 auto 24px;
+            }
+            .logout-pop-title {
+                font-family: var(--font-serif);
+                font-size: 24px;
+                font-weight: 600;
+                color: #1C1C1A;
+                margin-bottom: 12px;
+                letter-spacing: 0.5px;
+            }
+            .logout-pop-text {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #666;
+                margin-bottom: 32px;
+                font-family: var(--font-sans);
+            }
+            .logout-pop-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .btn-pop-stay {
+                padding: 14px;
+                border-radius: 12px;
+                border: 1px solid #Eaeaea;
+                background: #F9F9F7;
+                color: #666;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                outline: none;
+            }
+            .btn-pop-stay:hover {
+                background: #EEEEEE;
+                color: #1C1C1A;
+            }
+            .btn-pop-leave {
+                padding: 14px;
+                border-radius: 12px;
+                background: #8B1A1A;
+                color: #FFFFFF;
+                border: none;
+                font-weight: 600;
+                font-size: 14px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                outline: none;
+            }
+            .btn-pop-leave:hover {
+                background: #A02020;
+                box-shadow: 0 4px 12px rgba(139, 26, 26, 0.2);
+                transform: translateY(-1px);
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes popIn {
+                from { opacity: 0; transform: scale(0.9) translateY(20px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+        </style>
+        <script>
+            let currentConfirmCallback = null;
+
+            function closeTBConfirm() {
+                const pop = document.getElementById('tbConfirmPop');
+                if (pop) pop.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            function openTBConfirm(options) {
+                const pop = document.getElementById('tbConfirmPop');
+                if (!pop) return;
+
+                document.getElementById('tbConfirmTitle').textContent = options.title || 'Are you sure?';
+                document.getElementById('tbConfirmText').textContent = options.text || 'Please confirm to proceed.';
+                document.getElementById('tbConfirmActionBtn').textContent = options.confirmText || 'Confirm';
+                
+                if (options.icon) {
+                    document.getElementById('tbConfirmIcon').innerHTML = `<i class="bi ${options.icon}"></i>`;
+                }
+
+                currentConfirmCallback = options.onConfirm;
+                
+                pop.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            document.getElementById('tbConfirmActionBtn').addEventListener('click', () => {
+                if (currentConfirmCallback) currentConfirmCallback();
+                closeTBConfirm();
+            });
+        </script>
+    </div>
+    <div class="sidebar-brand">
+        <div class="logo">
+            <img th:src="@{/assets/images/logo.png}" class="logo-icon" alt="Truly Bare Logo">
+            <div>
+                <div class="logo-text">Truly Bare</div>
+                <div class="logo-sub">Admin Console</div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a th:href="@{/admin/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''">
+            <i class="bi bi-grid-1x2 nav-icon"></i> Dashboard
+        </a>
+        <a th:href="@{/admin/users}" th:classappend="${activeMenu == 'users'} ? 'active' : ''">
+            <i class="bi bi-people nav-icon"></i> Users
+        </a>
+
+        <div class="nav-section">Product Management</div>
+        <a th:href="@{/admin/products}" th:classappend="${activeMenu == 'products'} ? 'active' : ''">
+            <i class="bi bi-box-seam nav-icon"></i> Products
+        </a>
+        <a th:href="@{/admin/inventory}" th:classappend="${activeMenu == 'inventory'} ? 'active' : ''">
+            <i class="bi bi-archive nav-icon"></i> Inventory
+        </a>
+
+        <a th:href="@{/admin/orders}" th:classappend="${activeMenu == 'orders'} ? 'active' : ''">
+            <i class="bi bi-bag-check nav-icon"></i> Orders
+        </a>
+        <a th:href="@{/admin/returns}" th:classappend="${activeMenu == 'returns'} ? 'active' : ''">
+            <i class="bi bi-arrow-return-left nav-icon"></i> Returns &amp; Refunds
+        </a>
+
+        <div class="nav-section">Content Management</div>
+        <a th:href="@{/admin/categories}" th:classappend="${activeMenu == 'categories'} ? 'active' : ''">
+            <i class="bi bi-tags nav-icon"></i> Categories
+        </a>
+        <a th:href="@{/admin/slides}" th:classappend="${activeMenu == 'slides'} ? 'active' : ''">
+            <i class="bi bi-image nav-icon"></i> Main Banners
+        </a>
+        <a th:href="@{/admin/content/homepage}" th:classappend="${activeMenu == 'homepage-content'} ? 'active' : ''">
+            <i class="bi bi-window-sidebar nav-icon"></i> Section Texts
+        </a>
+        <a th:href="@{/admin/ritual-cards}" th:classappend="${activeMenu == 'ritual-cards'} ? 'active' : ''">
+            <i class="bi bi-grid-3x3-gap nav-icon"></i> Ritual Cards
+        </a>
+        <a th:href="@{/admin/vlogs}" th:classappend="${activeMenu == 'vlogs'} ? 'active' : ''">
+            <i class="bi bi-camera-video nav-icon"></i> Vlogs
+        </a>
+
+        <div class="nav-section">Other Content</div>
+        <a th:href="@{/admin/reviews}" th:classappend="${activeMenu == 'reviews'} ? 'active' : ''">
+            <i class="bi bi-star nav-icon"></i> Reviews
+        </a>
+
+        <div class="nav-section">Reports</div>
+        <a th:href="@{/admin/sales}" th:classappend="${activeMenu == 'sales'} ? 'active' : ''">
+            <i class="bi bi-graph-up-arrow nav-icon"></i> Sales Report
+        </a>
+        <a th:href="@{/admin/activity-log}" th:classappend="${activeMenu == 'activity-log'} ? 'active' : ''">
+            <i class="bi bi-shield-check nav-icon"></i> Activity Log
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a th:href="@{/}" target="_blank" style="margin-bottom: 12px; color: var(--gold); font-weight: 500;">
+            <i class="bi bi-shop"></i> View Storefront
+        </a>
+        <a th:href="@{/logout}"><i class="bi bi-box-arrow-left"></i> Sign Out</a>
+    </div>
+</div>
+
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Returns & Refunds')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('returns')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title">🔁 Returns &amp; Refunds</span>
+        <a href="/admin/activity-log" class="btn btn-outline" style="font-size:12px;padding:6px 14px;">
+            <i class="bi bi-activity"></i> Activity Log
+        </a>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}">✅ <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}">  ❌ <span th:text="${error}"></span></div>
+
+        <!-- Status count chips -->
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;">
+            <a th:href="@{/admin/returns}"
+               th:class="${activeStatus == null} ? 'filter-tab active' : 'filter-tab'"
+               style="border-radius:30px;padding:6px 16px;font-size:11px;">
+                All <span th:text="${returns.size()}" style="margin-left:4px;opacity:0.7;"></span>
+            </a>
+            <th:block th:each="entry : ${statusCounts}" th:if="${entry.value > 0}">
+                <a th:href="@{/admin/returns(status=${entry.key})}"
+                   th:class="${activeStatus == entry.key} ? 'filter-tab active' : 'filter-tab'"
+                   style="border-radius:30px;padding:6px 16px;font-size:11px;">
+                    <span th:text="${entry.key.replace('_',' ')}">STATUS</span>
+                    <span th:text="${'(' + entry.value + ')'}" style="margin-left:3px;opacity:0.7;"></span>
+                </a>
+            </th:block>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Return Requests (<span th:text="${returns.size()}">0</span>)</h2>
+            </div>
+
+            <div th:if="${returns.isEmpty()}" style="padding:60px;text-align:center;color:var(--text-muted);font-size:14px;">
+                <div style="font-size:40px;margin-bottom:12px;">🔁</div>
+                No return requests found for this filter.
+            </div>
+
+            <!-- Return rows -->
+            <div th:each="rr : ${returns}" style="border-bottom:1px solid var(--border);padding:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+
+                    <!-- Left block -->
+                    <div style="flex:1;min-width:260px;">
+                        <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+                            <a th:if="${rr.id != null}" th:href="@{'/admin/returns/' + ${rr.id}}"
+                               style="font-weight:700;font-family:'Cormorant Garamond',serif;color:var(--garnet);font-size:16px;text-decoration:none;"
+                               th:text="'RET-' + ${#numbers.formatInteger(rr.id, 3)}">RET-001</a>
+
+                             <!-- Status badge -->
+                            <span th:if="${rr.status != null}" th:with="s=${rr.status.name()}"
+                                  th:class="${s.contains('PENDING') ? 'badge-status yellow' :
+                                              s == 'APPROVED' ? 'badge-status green' :
+                                              s == 'REJECTED' ? 'badge-status red' :
+                                              s.contains('REFUND') ? 'badge-status blue' :
+                                              s == 'COMPLETED' ? 'badge-status green' :
+                                              'badge-status yellow'}"
+                                  th:text="${rr.status.name().replace('_',' ')}">STATUS</span>
+
+                            <span style="font-size:11px;background:rgba(201,168,76,0.1);padding:3px 10px;border-radius:20px;color:var(--bark);"
+                                  th:text="${rr.returnType == 'REPLACEMENT' ? '🔄 Replacement' : '💰 Refund'}">Type</span>
+
+                            <span th:if="${rr.order != null and rr.order.payment != null}" 
+                                  style="font-size:11px;background:rgba(0,0,0,0.05);padding:3px 10px;border-radius:20px;color:var(--text-dark);font-weight:600;"
+                                  th:text="${rr.order.payment.paymentMethod}">PM</span>
+                        </div>
+
+                        <div style="font-size:14px;font-weight:600;" th:text="${rr.user != null ? rr.user.fullName : 'Unknown User'}"></div>
+                        <div style="font-size:12px;color:var(--text-muted);" th:text="${rr.user != null ? rr.user.email : ''}"></div>
+
+                        <div style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;">
+                            <span style="font-size:12px;color:var(--text-muted);">
+                                Order: <strong th:text="${rr.order != null ? rr.order.orderNumber : 'N/A'}"></strong>
+                            </span>
+                            <span th:if="${rr.productName != null}" style="font-size:12px;color:var(--text-muted);">
+                                Product: <strong th:text="${rr.productName}"></strong>
+                            </span>
+                            <span style="font-size:12px;color:var(--text-muted);">
+                                Reason: <strong th:text="${rr.reason}"></strong>
+                            </span>
+                        </div>
+
+                        <div th:if="${rr.refundAmount != null}" style="margin-top:6px;font-size:13px;color:#1a8f4c;font-weight:700;">
+                            Refund: ₹<span th:text="${rr.refundAmount}"></span>
+                            <span th:if="${rr.razorpayRefundId != null}" style="font-size:10px;color:var(--text-muted);font-weight:400;"
+                                  th:text="'(Ref: ' + ${rr.razorpayRefundId} + ')'"></span>
+                        </div>
+
+                        <div style="margin-top:6px;font-size:11px;color:var(--text-muted);"
+                             th:text="'Submitted: ' + ${rr.createdAt != null ? #temporals.format(rr.createdAt, 'dd MMM yyyy, hh:mm a') : '—'}"></div>
+
+                        <!-- Message count badge -->
+                        <a th:href="@{'/admin/returns/' + ${rr.id}}"
+                           style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--bark);text-decoration:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;">
+                            <i class="bi bi-chat-dots"></i>
+                            <span th:text="${(rr.messages != null ? #lists.size(rr.messages) : 0) + ' messages'}">0 messages</span>
+                        </a>
+                    </div>
+
+                    <!-- Right: Quick actions -->
+                    <div style="display:flex;flex-direction:column;gap:8px;min-width:180px;">
+                        <a th:href="@{'/admin/returns/' + ${rr.id}}"
+                           class="btn btn-primary" style="justify-content:center;font-size:12px;padding:8px 16px;">
+                            <i class="bi bi-eye"></i> View &amp; Manage
+                        </a>
+
+                        <!-- Quick approve refund for APPROVED returns -->
+                        <form th:if="${rr.status.name() == 'APPROVED' and rr.returnType == 'RETURN' and rr.razorpayRefundId == null}"
+                              th:action="@{'/admin/returns/' + ${rr.id} + '/approve-refund'}" method="post">
+                            <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;font-size:12px;padding:8px 16px;"
+                                    th:onclick="'return confirm(\'' + (${rr.order.payment != null and rr.order.payment.paymentMethod == 'COD'} ? 'Mark this COD order as refunded? (Manual refund required)' : 'Trigger Razorpay refund now?') + '\')'">
+                                <i class="bi bi-cash-coin"></i>
+                                <span th:text="${rr.order.payment != null and rr.order.payment.paymentMethod == 'COD' ? 'Approve Manual Refund (COD)' : 'Initiate Refund'}"></span>
+                            </button>
+                        </form>
+
+                        <!-- Quick approve replacement -->
+                        <form th:if="${rr.status.name() == 'APPROVED' and rr.returnType == 'REPLACEMENT'}"
+                              th:action="@{'/admin/returns/' + ${rr.id} + '/approve-replacement'}" method="post">
+                            <button type="submit" class="btn" style="background:#7c3aed;color:#fff;width:100%;justify-content:center;font-size:12px;padding:8px 16px;"
+                                    onclick="return confirm('Approve replacement?')">
+                                <i class="bi bi-box-seam"></i> Approve Replacement
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-success { background: #16a34a; color: #fff; border: none; }
+.btn-success:hover { background: #15803d; }
+</style>
+
+</body>
+</html>

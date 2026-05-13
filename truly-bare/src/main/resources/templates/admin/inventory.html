@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Inventory')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('inventory')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title">🏪 Inventory (Stock Levels)</span>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}">✅ <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}">  ❌ <span th:text="${error}"></span></div>
+
+        <!-- Legend -->
+        <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+            <span class="badge-status green">● Plenty in stock (10+)</span>
+            <span class="badge-status yellow">● Getting low (5–9)</span>
+            <span class="badge-status red">⚠ Very low stock (&lt;5)</span>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>All Products – Stock Levels</h2>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Stock Level</th>
+                            <th>Update Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${products}">
+                            <td>
+                                <div th:text="${p.name}" style="font-weight:500;"></div>
+                                <div style="font-size:11px; color:var(--text-muted);" th:text="'PROD-' + ${p.productId}"></div>
+                            </td>
+                            <td class="muted" th:text="${p.category != null ? p.category.name : '—'}"></td>
+                            <td>
+                                <span th:with="qty=${p.stockQuantity ?: 0}"
+                                      th:class="${qty < 5 ? 'badge-status red' : (qty < 10 ? 'badge-status yellow' : 'badge-status green')}"
+                                      th:text="${qty}">0</span>
+                            </td>
+                            <td>
+                                <div class="stock-bar-wrap" style="min-width:120px;">
+                                    <div class="stock-bar" style="flex:1; height: 6px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                                        <div th:with="qty=${p.stockQuantity ?: 0}"
+                                             th:class="${qty < 5 ? 'stock-bar-fill low' : (qty < 20 ? 'stock-bar-fill medium' : 'stock-bar-fill high')}"
+                                             th:style="'height: 100%; width:' + (${qty > 100 ? 100 : qty}) + '%'"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/inventory/update}" method="post" style="display:flex; gap:8px; align-items:center;">
+                                    <input type="hidden" name="productId" th:value="${p.productId}"/>
+                                    <input type="number" name="quantity" th:value="${p.stockQuantity ?: 0}" min="0"
+                                           class="inline-select" style="width:80px;"/>
+                                    <button type="submit" class="btn btn-gold btn-sm">Update</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,481 @@
+/* ============================================ */
+/* TRULY BARE — PRODUCTS COLLECTION             */
+/* Premium | Minimal | Luxury                   */
+/* ============================================ */
+
+/* Hide sub-nav on products listing — editorial page needs a clean header */
+.category-subnav {
+    display: none !important;
+}
+
+/* Hide category filters on products listing as requested */
+.filters-bar {
+    display: none !important;
+}
+
+/* ── Page Hero ── */
+.products-hero {
+    padding: clamp(100px, 15vw, 180px) 0 clamp(60px, 8vw, 100px);
+    text-align: center;
+    background: linear-gradient(160deg, #FDFBF8 0%, #FAFAF8 50%, #F5F5F2 100%);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.8s ease;
+}
+
+.products-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 10% 20%, rgba(201, 168, 76, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(201, 168, 76, 0.04) 0%, transparent 50%);
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.hero-badge {
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #C9A84C;
+    margin-bottom: 24px;
+    display: block;
+    font-weight: 500;
+}
+
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 6.5vw, 72px);
+    font-weight: 400;
+    color: #001A35;
+    letter-spacing: -1.5px;
+    margin-bottom: 28px;
+    line-height: 1.05;
+    position: relative;
+}
+
+.hero-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: #C9A84C;
+}
+
+.hero-subtitle {
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: #5A5754;
+    letter-spacing: 0.2px;
+    line-height: 1.8;
+    font-weight: 300;
+    max-width: 620px;
+    margin: 0 auto;
+    position: relative;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+}
+
+/* ── Category Specific Palettes ── */
+
+/* Weight Loss: Elegant Charcoal/Gold */
+.hero-weight-loss {
+    background: linear-gradient(165deg, #F8F7F5 0%, #F1F0ED 100%);
+}
+
+.hero-weight-loss .hero-badge {
+    color: #8B1A1A;
+}
+
+/* Supplements: Deep Botanical/Gold */
+.hero-supplements {
+    background: linear-gradient(165deg, #F5F7F5 0%, #EDF1ED 100%);
+}
+
+.hero-supplements .hero-badge {
+    color: #C9A84C;
+}
+
+/* Pain Relief: Deep Navy / Calm Silver */
+.hero-pain-relief {
+    background: linear-gradient(165deg, #F5F6F8 0%, #EDEFF5 100%);
+}
+
+.hero-pain-relief .hero-badge {
+    color: #4A90E2;
+}
+
+/* Skin Care: Soft Rose Blush */
+.hero-skin-care {
+    background: linear-gradient(165deg, #FAF4F4 0%, #F5EDED 100%);
+}
+
+.hero-skin-care .hero-badge {
+    color: var(--sapphire-gold);
+}
+
+/* Hair Care: Obsidian / Gold */
+.hero-hair-care {
+    background: linear-gradient(165deg, #F7F7F7 0%, #EEEEEE 100%);
+}
+
+.hero-hair-care .hero-badge {
+    color: #C9A84C;
+}
+
+/* Cosmetics (Parent): Cream / Earthy */
+.hero-cosmetics {
+    background: linear-gradient(165deg, #FAF8F5 0%, #F2F0ED 100%);
+}
+
+.hero-cosmetics .hero-badge {
+    color: #C9A84C;
+}
+
+/* ── Subcategory Titles ── */
+.subcategory-title {
+    margin: 0;
+    font-size: 28px;
+    text-align: center;
+    font-family: var(--font-display), serif;
+    font-weight: 500;
+    letter-spacing: 3px;
+    padding-bottom: 0;
+    display: inline-block;
+    color: var(--sapphire-gold);
+    position: relative;
+    text-transform: uppercase;
+}
+
+.subcategory-title span {
+    padding-bottom: 2px;
+    position: relative;
+    display: inline-block;
+}
+
+.subcategory-note {
+    max-width: 600px;
+    margin: 30px auto 0; /* Increased space for breathing room */
+    font-size: 14px;
+    line-height: 1.6;
+    color: #7A7775;
+    font-style: italic;
+    text-align: center;
+    font-family: var(--font-sans);
+    opacity: 0.85;
+}
+
+.subcategory-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    height: 16px;
+    background: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 16'%3E%3Cline x1='60' y1='8' x2='200' y2='8' stroke='%238B1A1A' stroke-width='1'/%3E%3Cpath d='M55 4l-6 4 6 4' fill='none' stroke='%238B1A1A' stroke-width='1'/%3E%3Crect x='40' y='5.5' width='5' height='5' transform='rotate(45 42.5 8)' fill='%238B1A1A'/%3E%3Cpath d='M205 4l6 4-6 4' fill='none' stroke='%238B1A1A' stroke-width='1'/%3E%3Crect x='215' y='5.5' width='5' height='5' transform='rotate(45 217.5 8)' fill='%238B1A1A'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    display: block;
+}
+
+.subcategory-title.gold-text {
+    color: var(--sapphire-gold) !important;
+}
+
+/* Remove any legacy manual flourishes */
+.subcategory-title span::before,
+.subcategory-title span::after {
+    display: none !important;
+}
+
+/* ── Product Card Layout Overrides — Removed to use global premium styles ── */
+
+.filters-bar {
+    margin: 36px 0 8px;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 0;
+}
+
+.category-filters {
+    display: flex;
+    gap: 4px;
+    background: rgba(250, 248, 245, 0.80);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(201, 168, 76, 0.15);
+    border-radius: 50px;
+    padding: 6px;
+    box-shadow: 0 4px 20px rgba(28, 28, 26, 0.04);
+}
+
+.filter-btn {
+    text-decoration: none;
+    color: #7A7775;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    padding: 9px 20px;
+    border-radius: 50px;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    color: #001A35;
+    background: rgba(201, 168, 76, 0.07);
+}
+
+.filter-btn.active {
+    color: var(--pale-white);
+    background: #8B1A1A;
+    box-shadow: 0 4px 14px rgba(139, 26, 26, 0.22);
+}
+
+/* ── Product Grid — Removed legacy grid, now uses .product-grid-premium ── */
+
+
+
+
+
+
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+        border-radius: 16px;
+        padding: 10px;
+    }
+
+    .filter-btn {
+        font-size: 10px;
+        padding: 8px 14px;
+    }
+
+    .products-hero {
+        padding: 100px 0 48px;
+    }
+}
+
+/* ── Empty State ── */
+.empty-products {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 100px 0;
+}
+
+.empty-products i {
+    font-size: 48px;
+    color: #C9A84C;
+    margin-bottom: 24px;
+    display: block;
+    opacity: 0.7;
+}
+
+.empty-products h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: #001A35;
+    margin-bottom: 10px;
+}
+
+.empty-products p {
+    font-size: 14px;
+    color: #7A7775;
+    margin-bottom: 28px;
+}
+
+.empty-products a {
+    display: inline-block;
+    padding: 12px 28px;
+    border: 1px solid rgba(201, 168, 76, 0.4);
+    border-radius: 50px;
+    color: #C9A84C;
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.empty-products a:hover {
+    background: #C9A84C;
+    color: #fff;
+}
+
+/* ── Collection Directory (Gallery View) ── */
+.directory-container {
+    grid-column: 1 / -1;
+    padding: 80px 0;
+    text-align: center;
+}
+
+
+/* ── Collection Directory ── */
+.directory-container {
+    grid-column: 1 / -1;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.directory-header {
+    margin-bottom: 60px;
+}
+
+.directory-overline {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #C9A84C;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.directory-title {
+    font-family: var(--font-display);
+    font-size: 38px;
+    font-weight: 400;
+    color: #001A35;
+    margin-bottom: 15px;
+}
+
+.directory-subtitle {
+    font-size: 15px;
+    color: #7A7775;
+    max-width: 500px;
+    margin: 0 auto;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.directory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    max-width: 900px;
+    margin: 40px auto 0;
+    padding: 0 20px;
+}
+
+.directory-card {
+    position: relative;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--pale-white);
+    border: 1px solid rgba(220, 215, 210, 0.4);
+    box-shadow: 0 15px 45px rgba(28, 28, 26, 0.03);
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.directory-card-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(165deg, #FAF8F5 0%, #F2F0ED 100%);
+    opacity: 0.5;
+    transition: all 0.5s ease;
+}
+
+.directory-card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(201, 168, 76, 0.3);
+    box-shadow: 0 30px 60px rgba(139, 26, 26, 0.08);
+}
+
+.directory-card:hover .directory-card-bg {
+    opacity: 1;
+}
+
+.directory-card-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.directory-card-content i {
+    font-size: 44px;
+    color: #C9A84C;
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.directory-card:hover i {
+    transform: scale(1.15) rotate(5deg);
+    color: #8B1A1A;
+}
+
+.directory-card-content h4 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 500;
+    color: #001A35;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.directory-card-action {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #7A7775;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s ease, gap 0.3s ease;
+}
+
+.directory-card:hover .directory-card-action {
+    color: #8B1A1A;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .directory-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .directory-card {
+        height: 240px;
+    }
+
+    .directory-title {
+        font-size: 30px;
+    }
+}
+
+/* ── Global Product Card Image Fit Overrides ── */
+.card-image-wrap {
+    aspect-ratio: 1 / 1 !important;
+    overflow: hidden !important;
+    background: var(--pale-white) !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+.card-image-wrap img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+}

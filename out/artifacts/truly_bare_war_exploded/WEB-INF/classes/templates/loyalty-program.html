@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyalty Program | Truly Bare</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --tier-bronze: #A68B6A;
+            --tier-silver: #9E9E9E;
+            --tier-gold: #D4AF37;
+            --tier-platinum: #8E8E9A;
+            --tier-diamond: #4FC3F7;
+            --tier-elite: #8B1A1A;
+            --bg-dark: #1C1C1A;
+        }
+
+        body {
+            background-color: var(--pale-white);
+            color: #2B2B2B;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .loyalty-hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&q=80&w=2070');
+            background-size: cover;
+            background-position: center;
+            height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--pale-white);
+            padding: 0 20px;
+        }
+
+        .loyalty-hero h1 {
+            font-family: 'Bodoni Moda', serif;
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .loyalty-hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .tier-container {
+            max-width: 1200px;
+            margin: -60px auto 80px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .tier-card-info {
+            background: var(--pale-white);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(28, 28, 26, 0.08);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tier-card-info:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .tier-card-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+        }
+
+        .tier-info-bronze::before {
+            background: var(--tier-bronze);
+        }
+
+        .tier-info-silver::before {
+            background: var(--tier-silver);
+        }
+
+        .tier-info-gold::before {
+            background: var(--tier-gold);
+        }
+
+        .tier-info-platinum::before {
+            background: var(--tier-platinum);
+        }
+
+        .tier-info-diamond::before {
+            background: var(--tier-diamond);
+        }
+
+        .tier-info-elite::before {
+            background: var(--tier-elite);
+        }
+
+        .tier-icon-lg {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .tier-info-bronze .tier-icon-lg {
+            color: var(--tier-bronze);
+        }
+
+        .tier-info-silver .tier-icon-lg {
+            color: var(--tier-silver);
+        }
+
+        .tier-info-gold .tier-icon-lg {
+            color: var(--tier-gold);
+        }
+
+        .tier-info-platinum .tier-icon-lg {
+            color: var(--tier-platinum);
+        }
+
+        .tier-info-diamond .tier-icon-lg {
+            color: var(--tier-diamond);
+        }
+
+        .tier-info-elite .tier-icon-lg {
+            color: var(--tier-elite);
+        }
+
+        .tier-card-info h2 {
+            font-family: 'Bodoni Moda', serif;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .tier-card-info .order-range {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #888;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        .benefit-list {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin-top: 30px;
+        }
+
+        .benefit-list li {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #444;
+        }
+
+        .benefit-list li i {
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+
+        .points-section {
+            background: #fdfaf5;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .points-grid {
+            max-width: 1000px;
+            margin: 50px auto 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .point-step {
+            padding: 20px;
+        }
+
+        .step-num {
+            font-family: 'Bodoni Moda', serif;
+            font-size: 3rem;
+            color: var(--gold);
+            opacity: 0.3;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .point-step h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .point-step p {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .active-tier-glow {
+            border: 2px solid var(--gold) !important;
+        }
+
+        .active-tier-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--gold);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .loyalty-hero {
+                height: 320px;
+            }
+
+            .loyalty-hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .loyalty-hero p {
+                font-size: 0.9rem;
+                letter-spacing: 2px;
+            }
+
+            .loyalty-progress-section {
+                width: 92% !important;
+                margin: -30px auto 40px !important;
+                padding: 25px 20px !important;
+                border-radius: 16px !important;
+            }
+
+            .progress-title {
+                font-size: 1.4rem !important;
+                margin-bottom: 20px !important;
+            }
+
+            .loyalty-progress-section > div:first-of-type {
+                gap: 10px !important;
+                margin-bottom: 20px !important;
+            }
+
+            .tier-container {
+                margin: 0 auto 50px !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                padding: 0 12px !important;
+            }
+
+            .tier-card-info {
+                padding: 20px 12px !important;
+            }
+
+            .tier-card-info h2 {
+                font-size: 1.2rem !important;
+                margin-bottom: 5px;
+            }
+
+            .tier-icon-lg {
+                font-size: 28px !important;
+                margin-bottom: 12px !important;
+            }
+
+            .order-range {
+                font-size: 0.7rem !important;
+                margin-bottom: 15px !important;
+            }
+
+            .benefit-list li {
+                font-size: 0.75rem !important;
+                gap: 6px !important;
+                margin-bottom: 8px !important;
+            }
+
+            .benefit-list li i {
+                font-size: 0.9rem !important;
+            }
+
+            .points-section {
+                padding: 60px 20px;
+            }
+
+            .points-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                margin-top: 30px;
+            }
+
+            .step-num {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .loyalty-hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .loyalty-progress-section {
+                padding: 20px 15px !important;
+            }
+            
+            .progress-title {
+                font-size: 1.25rem !important;
+            }
+
+            .tier-container {
+                gap: 8px !important;
+                padding: 0 8px !important;
+            }
+
+            .tier-card-info {
+                padding: 15px 8px !important;
+            }
+            
+            .tier-card-info h2 {
+                font-size: 1.1rem !important;
+            }
+
+            .active-tier-badge {
+                top: 8px !important;
+                right: 8px !important;
+                font-size: 7px !important;
+                padding: 3px 8px !important;
+                letter-spacing: 0.5px !important;
+            }
+
+            .tier-info-elite {
+                grid-column: 1 / 3 !important;
+                justify-self: center !important;
+                width: 100% !important;
+                max-width: 170px !important; /* Matches approximate width of other cards in 2-col */
+                margin-top: 10px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <section class="loyalty-hero">
+        <div>
+            <p>Truly Bare Rituals</p>
+            <h1>The Membership</h1>
+            <p>Elevate Your Botanical Journey</p>
+        </div>
+    </section>
+
+    <!-- Progress Bar Section -->
+    <div th:if="${user != null}" class="loyalty-progress-section" style="max-width: 600px; margin: -40px auto 60px; position: relative; z-index: 20; background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); text-align: center;">
+
+
+        <h3 class="progress-title" style="font-family: 'Bodoni Moda', serif; font-size: 2rem; color: #1a1a1a; margin-bottom: 30px;">Your Botanical Journey</h3>
+        
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px; font-size: 0.85rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; flex-wrap: wrap;">
+            <div><strong th:text="${orderCount}" style="color: #c9a84c; font-size: 1.1rem; margin-right: 5px;">0</strong> ORDERS PLACED</div>
+            <div th:if="${nextTierOrders != -1}" style="display: flex; align-items: center; gap: 15px;">
+                <span style="color: #e0e0e0; font-size: 1.2rem; font-weight: 300;">|</span>
+                <div>
+                    <strong th:text="${ordersToNextTier}" style="color: #c9a84c; font-size: 1.1rem; margin-right: 5px;">0</strong> 
+                    ORDERS TO <span th:text="${nextTierOrders == 10 ? 'SILVER' : nextTierOrders == 25 ? 'GOLD' : nextTierOrders == 50 ? 'PLATINUM' : 'ELITE'}">NEXT</span>
+                </div>
+            </div>
+            <div th:if="${nextTierOrders == -1}" style="display: flex; align-items: center; gap: 15px;">
+                <span style="color: #e0e0e0; font-size: 1.2rem; font-weight: 300;">|</span>
+                <div>
+                    <strong style="color: #c9a84c; font-size: 1.1rem;">ELITE</strong> STATUS REACHED
+                </div>
+            </div>
+        </div>
+
+        <div style="width: 100%; height: 8px; background: #f0f0f0; border-radius: 10px; margin-bottom: 25px; position: relative;">
+            <div th:styleappend="'width: ' + (${nextTierOrders != -1 ? (orderCount * 100.0 / nextTierOrders) : 100}) + '%;'" style="height: 100%; background: linear-gradient(90deg, #c9a84c, #D4AF37); border-radius: 10px; transition: width 1s ease-in-out; position: relative; display: flex; align-items: center; justify-content: flex-end;">
+                <i class="bi bi-star-fill" style="color: #D4AF37; font-size: 18px; position: absolute; right: -9px; top: -5px; filter: drop-shadow(0 2px 4px rgba(212,175,55,0.4)); background: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; z-index: 2;"></i>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: #aaa; text-transform: uppercase;">
+            <span th:text="${memberStatus}">BRONZE</span>
+            <span th:if="${nextTierOrders != -1}" th:text="${nextTierOrders == 10 ? 'SILVER' : nextTierOrders == 25 ? 'GOLD' : nextTierOrders == 50 ? 'PLATINUM' : 'ELITE'}">SILVER</span>
+            <span th:if="${nextTierOrders == -1}">ELITE</span>
+        </div>
+    </div>
+
+    <div class="tier-container" th:style="${user != null ? 'margin-top: 0;' : 'margin-top: -60px;'}">
+        <!-- Bronze -->
+        <div class="tier-card-info tier-info-bronze"
+            th:classappend="${memberStatus == 'Bronze' ? 'active-tier-glow' : ''}">
+            <div class="active-tier-badge" th:if="${memberStatus == 'Bronze'}">CURRENT TIER</div>
+            <i class="bi bi-circle-half tier-icon-lg"></i>
+            <h2>Bronze</h2>
+            <span class="order-range">0 - 9 ORDERS</span>
+            <ul class="benefit-list">
+                <li><i class="bi bi-check2"></i> Earn 1% Points on all orders</li>
+                <li><i class="bi bi-check2"></i> 50 Bonus Points on first order</li>
+                <li><i class="bi bi-check2"></i> Standard Botanical Support</li>
+            </ul>
+        </div>
+
+        <!-- Silver -->
+        <div class="tier-card-info tier-info-silver"
+            th:classappend="${memberStatus == 'Silver' ? 'active-tier-glow' : ''}">
+            <div class="active-tier-badge" th:if="${memberStatus == 'Silver'}">CURRENT TIER</div>
+            <i class="bi bi-star tier-icon-lg"></i>
+            <h2>Silver</h2>
+            <span class="order-range">10 - 24 ORDERS</span>
+            <ul class="benefit-list">
+                <li><i class="bi bi-check2"></i> Earn 2% Points on all orders</li>
+                <li><i class="bi bi-check2"></i> Early access to new formulations</li>
+                <li><i class="bi bi-check2"></i> Exclusive seasonal samples</li>
+            </ul>
+        </div>
+
+        <!-- Gold -->
+        <div class="tier-card-info tier-info-gold" th:classappend="${memberStatus == 'Gold' ? 'active-tier-glow' : ''}">
+            <div class="active-tier-badge" th:if="${memberStatus == 'Gold'}">CURRENT TIER</div>
+            <i class="bi bi-star-fill tier-icon-lg"></i>
+            <h2>Gold</h2>
+            <span class="order-range">25 - 49 ORDERS</span>
+            <ul class="benefit-list">
+                <li><i class="bi bi-check2"></i> Earn 2% Points on all orders</li>
+
+                <li><i class="bi bi-check2"></i> Priority Botanical Concierge</li>
+            </ul>
+        </div>
+
+        <!-- Platinum -->
+        <div class="tier-card-info tier-info-platinum"
+            th:classappend="${memberStatus == 'Platinum' ? 'active-tier-glow' : ''}">
+            <div class="active-tier-badge" th:if="${memberStatus == 'Platinum'}">CURRENT TIER</div>
+            <i class="bi bi-gem tier-icon-lg"></i>
+            <h2>Platinum</h2>
+            <span class="order-range">50 - 99 ORDERS</span>
+            <ul class="benefit-list">
+                <li><i class="bi bi-check2"></i> Earn 3% Points on all orders</li>
+                <li><i class="bi bi-check2"></i> Free shipping on all Rituals</li>
+
+            </ul>
+        </div>
+
+        <!-- Elite -->
+        <div class="tier-card-info tier-info-elite"
+            th:classappend="${memberStatus == 'Elite' ? 'active-tier-glow' : ''}">
+            <div class="active-tier-badge" th:if="${memberStatus == 'Elite'}">CURRENT TIER</div>
+            <i class="bi bi-crown-fill tier-icon-lg"></i>
+            <h2>Elite</h2>
+            <span class="order-range">100+ ORDERS</span>
+            <ul class="benefit-list">
+                <li><i class="bi bi-check2"></i> Earn 5% Points on all orders</li>
+                <li><i class="bi bi-check2"></i> Free shipping on all Rituals</li>
+                <li><i class="bi bi-check2"></i> Lifetime VIP Concierge</li>
+                <li><i class="bi bi-check2"></i> Quarterly Luxury Care Box</li>
+            </ul>
+        </div>
+    </div>
+
+    <section class="points-section">
+        <h2 style="font-family: 'Bodoni Moda', serif; font-size: 2.5rem; margin-bottom: 20px;">The Ritual Reward</h2>
+        <p style="letter-spacing: 1px; color: #888; text-transform: uppercase; font-size: 0.9rem;">How you earn & redeem
+        </p>
+
+        <div class="points-grid">
+            <div class="point-step">
+                <span class="step-num">01</span>
+                <h3>Experience</h3>
+                <p>Order your favorite Truly Bare botanical rituals. Your status updates automatically as you grow with
+                    us.</p>
+            </div>
+            <div class="point-step">
+                <span class="step-num">02</span>
+                <h3>Accumulate</h3>
+                <p>Earn up to 5% points back on every rupee spent, directly into your botanical wallet.</p>
+            </div>
+            <div class="point-step">
+                <span class="step-num">03</span>
+                <h3>Flourish</h3>
+                <p>Redeem points for exclusive discounts, private collections, and custom botanical blends.</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 80px;">
+            <a th:href="@{/profile}" class="btn-shop" style="padding: 18px 45px; text-decoration: none;">Return to
+                Profile</a>
+        </div>
+    </section>
+
+    <th:block th:replace="~{fragments :: main_footer}"></th:block>
+
+</body>
+
+</html>

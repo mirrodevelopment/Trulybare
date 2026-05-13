@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Truly Bare | Sign In</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <!-- Page Specific Styles -->
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+
+<body>
+
+<!-- Animated blobs -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="login-page">
+    <div class="login-card">
+
+        <!-- Brand Header -->
+        <div class="login-brand">
+            <div class="brand-icon-wrap">
+                <img th:src="@{/assets/images/logo.png}" src="/assets/images/logo.png" alt="Truly Bare Logo"
+                     style="width:88px;height:88px;object-fit:contain;padding:10px;
+                            background:rgba(250,248,245,0.97);
+                            border-radius:16px;
+                            border:2px solid #C9A84C;
+                            box-shadow:0 4px 24px rgba(201,168,76,0.22), 0 0 0 4px rgba(201,168,76,0.09);">
+            </div>
+            <span class="brand-name">Truly Bare</span>
+            <span class="brand-tagline">Luxury Botanical Skincare</span>
+        </div>
+
+        <!-- Body -->
+        <div class="login-body">
+            <h2 class="login-greeting">Welcome Back</h2>
+            <p class="login-sub">Sign in to continue your journey</p>
+
+            <!-- Alerts (Thymeleaf) -->
+            <div th:if="${param.success}" class="alert alert-success">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${success} ?: 'Registration successful! Please sign in.'">Registration successful! Please sign in.</span>
+            </div>
+            <div th:if="${param.registered}" class="alert alert-success">
+                <i class="bi bi-check-circle"></i> Account created successfully. Please sign in.
+            </div>
+            <div th:if="${param.error}" class="alert alert-danger">
+                <i class="bi bi-exclamation-circle"></i> Invalid email or password.
+            </div>
+            <div th:if="${param.logout}" class="alert alert-info">
+                <i class="bi bi-box-arrow-left"></i> You have been signed out.
+            </div>
+
+            <!-- Login Form -->
+            <form th:action="@{/login-process}" method="post">
+                <input type="hidden" name="next" th:value="${next}">
+
+                <div class="form-group">
+                    <label class="form-label" for="username">Email Address</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-envelope input-icon"></i>
+                        <input type="email" id="username" name="username"
+                               class="form-input" placeholder="your@email.com"
+                               required autofocus autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="passwordInput">Password</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-lock input-icon"></i>
+                        <input type="password" id="passwordInput" name="password"
+                               class="form-input" placeholder="Enter your password"
+                               required autocomplete="current-password">
+                        <button type="button" class="toggle-password"
+                                data-target="passwordInput"
+                                style="position:absolute;right:12px;background:none;border:none;cursor:pointer;color:#9E9E9E;font-size:14px;padding:0;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="remember-label">
+                        <input type="checkbox" name="remember-me"> Remember me
+                    </label>
+                    <a href="#" class="forgot-link">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-submit" id="loginBtn">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </button>
+            </form>
+
+            <hr class="gold-rule">
+
+            <div class="login-footer">
+                <p>Don't have an account?
+                    <a th:href="@{/register}" href="/register"><strong>Create Account</strong></a>
+                </p>
+                <a th:href="@{/home}" href="/home" class="back-home">
+                    <i class="bi bi-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/login.js}"></script>
+</body>
+</html>

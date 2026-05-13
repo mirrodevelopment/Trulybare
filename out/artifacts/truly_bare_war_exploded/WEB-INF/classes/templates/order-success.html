@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Confirmed | Truly Bare Luxury Skincare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/order-success.css}">
+
+</head>
+<body>
+    <main class="success-page">
+        <div class="success-card">
+            <div class="success-icon">
+                <i class="bi bi-check2"></i>
+            </div>
+            <h1 class="success-title">Thank You</h1>
+            <span class="user-name" th:text="${order.user.fullName}">Guest Name</span>
+            <p class="success-msg">Your ritual is beginning. We've received your order and our specialists are preparing your formulations.</p>
+            
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="info-label">Order Number</span>
+                    <span class="info-value" th:text="${order.orderNumber}">#TB-2024-001</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Order Date</span>
+                    <span class="info-value" th:text="${#temporals.format(order.createdAt, 'dd MMMM yyyy')}">April 17, 2024</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Total Amount</span>
+                    <span class="info-value">₹<th:block th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></th:block></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Payment Method</span>
+                    <span class="info-value">
+                        <th:block th:if="${order.payment != null}" th:text="${order.payment.paymentMethod == 'ONLINE' ? 'Razorpay Online' : 'Cash on Delivery'}"></th:block>
+                        <th:block th:if="${order.payment == null}">Cash on Delivery</th:block>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Order Status</span>
+                    <span class="info-value" th:text="${order.status}">PENDING</span>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a th:href="@{/home}" class="btn-outline">Return Home</a>
+                <a th:href="@{/profile}" class="btn-outline" style="background: #C9A84C; color: white;">Order Details</a>
+            </div>
+        </div>
+        
+        <!-- Level Up Full Screen Popup -->
+        <div th:if="${order.user.totalOrders == 10 || order.user.totalOrders == 25 || order.user.totalOrders == 50 || order.user.totalOrders == 100}" 
+             id="level-up-popup" 
+             style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 53, 0.98); z-index: 9999; display: flex; align-items: center; justify-content: center; color: #FAF8F5; text-align: center; backdrop-filter: blur(10px); animation: fadeIn 0.5s ease-out;">
+            <div style="max-width: 500px; padding: 40px;">
+                <i class="bi bi-trophy-fill" style="font-size: 5rem; color: #C9A84C; display: block; margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(201, 168, 76, 0.4)); animation: trophyBounce 1s ease-in-out infinite;"></i>
+                <h2 style="font-family: 'Cinzel Decorative', serif; font-size: 2.5rem; letter-spacing: 4px; margin-bottom: 15px; color: #C9A84C;">Congratulations!</h2>
+                <p style="font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 20px;">
+                    You've reached <strong th:text="${order.user.customerStatus}">Status</strong> Status!
+                </p>
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px 25px; border-radius: 50px; display: inline-block; border: 1px solid rgba(201, 168, 76, 0.3);">
+                    <span style="font-size: 1rem; letter-spacing: 2px; text-transform: uppercase;">+25 Loyalty Points Added</span>
+                </div>
+                <p style="margin-top: 30px; font-size: 0.9rem; opacity: 0.6; letter-spacing: 1px;">Continuing your botanical journey...</p>
+            </div>
+        </div>
+
+        <style>
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+            @keyframes trophyBounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-15px); }
+            }
+        </style>
+
+        <script>
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem('trulyBareCart');
+                console.log('Cart cleared on successful order.');
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof updateGlobalCartBadge === 'function') {
+                    updateGlobalCartBadge();
+                }
+
+                // Level Up Popup Timer
+                const popup = document.getElementById('level-up-popup');
+                if (popup) {
+                    setTimeout(() => {
+                        popup.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
+                        popup.style.opacity = '0';
+                        popup.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            popup.style.display = 'none';
+                        }, 1000);
+                    }, 3000);
+                }
+            });
+        </script>
+    </main>
+</body>
+</html>

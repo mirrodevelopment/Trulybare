@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Homepage Content')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('homepage-content')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title"><i class="bi bi-window-sidebar"></i> Homepage Content</span>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}"><i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}"><i class="bi bi-exclamation-circle-fill"></i> <span th:text="${error}"></span></div>
+
+        <div style="margin-bottom: 30px;">
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--navy);">Section Text Management</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Customize the headings and descriptions for different sections of your homepage.</p>
+        </div>
+
+        <form th:action="@{/admin/content/homepage/save}" method="post" style="max-width: 800px;">
+            <!-- Global Announcement Bar -->
+            <div class="card" style="margin-bottom: 30px; border-left: 4px solid var(--garnet);">
+                <div class="card-header">
+                    <h3><i class="bi bi-megaphone"></i> Global Announcement Bar</h3>
+                </div>
+                <div class="card-body">
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
+                        This text appears at the very top of every page on the storefront. Use it for shipping offers, new launches, or important alerts.
+                    </p>
+                    <div class="form-group">
+                        <label>Announcement Messages</label>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.6;">
+                            Add multiple messages — they will <strong>rotate automatically every 3 seconds</strong> on the storefront. Max 5 messages.
+                        </p>
+                        <div id="announcementRows" style="display:flex; flex-direction:column; gap:10px;">
+                            <!-- Rows injected by JS -->
+                        </div>
+                        <button type="button" onclick="addAnnouncementRow()" id="addAnnouncementBtn"
+                                style="margin-top:12px; display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; border:1px dashed var(--gold); background:var(--gold-faint); color:var(--bark); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s;">
+                            ➕ Add Message
+                        </button>
+                        <!-- Hidden input: stores the final pipe-joined value on submit -->
+                        <input type="hidden" name="announcementText" id="announcementTextHidden"/>
+                    </div>
+                    <script th:inline="javascript">
+                    (function() {
+                        const MAX = 5;
+                        const existing = /*[[${announcementText}]]*/ "";
+                        const parts = existing ? existing.split('|').map(s => s.trim()).filter(Boolean) : [];
+
+                        // Render pre-existing rows
+                        parts.forEach(function(val) { addAnnouncementRow(val); });
+                        // Always show at least one empty row
+                        if (parts.length === 0) addAnnouncementRow('');
+
+                        function addAnnouncementRow(val) {
+                            const container = document.getElementById('announcementRows');
+                            const rows = container.querySelectorAll('.ann-row');
+                            if (rows.length >= MAX) {
+                                document.getElementById('addAnnouncementBtn').style.display = 'none';
+                                return;
+                            }
+                            const row = document.createElement('div');
+                            row.className = 'ann-row';
+                            row.style.cssText = 'display:flex; align-items:center; gap:8px;';
+                            row.innerHTML = `
+                                <span style="width:22px; height:22px; background:var(--garnet); color:#fff; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">${rows.length + 1}</span>
+                                <input type="text" style="flex:1;" placeholder="e.g. Free shipping on orders over ₹2,500" value="${(val || '').replace(/"/g, '&quot;')}" maxlength="140"/>
+                                <button type="button" onclick="removeRow(this)" style="flex-shrink:0; padding:6px 10px; border-radius:7px; border:1px solid rgba(192,57,43,0.2); background:var(--red-faint); color:var(--red); font-size:12px; cursor:pointer;">✕</button>
+                            `;
+                            container.appendChild(row);
+                            updateNumbers();
+                        }
+
+                        function removeRow(btn) {
+                            btn.closest('.ann-row').remove();
+                            updateNumbers();
+                            document.getElementById('addAnnouncementBtn').style.display = 'inline-flex';
+                        }
+
+                        function updateNumbers() {
+                            document.querySelectorAll('.ann-row').forEach(function(r, i) {
+                                const badge = r.querySelector('span');
+                                if (badge) badge.textContent = i + 1;
+                            });
+                        }
+
+                        // Expose addAnnouncementRow to global scope for onclick
+                        window.addAnnouncementRow = addAnnouncementRow;
+                        window.removeRow = removeRow;
+
+                        // On form submit: collect all inputs and join with pipe
+                        const form = document.querySelector('form');
+                        if (form) {
+                            form.addEventListener('submit', function() {
+                                const vals = Array.from(document.querySelectorAll('.ann-row input[type=text]'))
+                                    .map(i => i.value.trim())
+                                    .filter(Boolean);
+                                document.getElementById('announcementTextHidden').value = vals.join(' | ');
+                            });
+                        }
+                    })();
+                    </script>
+                </div>
+            </div>
+
+            <!-- Ritual Edit Section -->
+            <div class="card" style="margin-bottom: 30px;">
+                <div class="card-header">
+                    <h3>The Ritual Edit Section</h3>
+                </div>
+                <div class="card-body">
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
+                        This is the middle section of the homepage featuring the anti-gravity product carousel.
+                    </p>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label>Eyebrow Text (Small Label)</label>
+                        <input type="text" name="ritualEyebrow" th:value="${ritualEyebrow}" placeholder="e.g. The Ritual Edit">
+                        <small style="font-size: 10px; color: var(--text-muted);">Appears in small uppercase letters above the title.</small>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label>Section Title</label>
+                        <input type="text" name="ritualTitle" th:value="${ritualTitle}" placeholder="e.g. Crafted for the senses">
+                        <small style="font-size: 10px; color: var(--text-muted);">The primary heading for the section (supports italic markup if needed manually).</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Section Description</label>
+                        <textarea name="ritualDesc" rows="4" th:text="${ritualDesc}" placeholder="Our masterclass formulations..."></textarea>
+                        <small style="font-size: 10px; color: var(--text-muted);">The descriptive text appearing next to the title.</small>
+                    </div>
+
+                    <!-- Ritual Cards Preview -->
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed var(--border);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h4 style="font-size:13px; font-weight:600; color:var(--navy); text-transform:uppercase; letter-spacing:1px;">Active Ritual Cards</h4>
+                            <a th:href="@{/admin/ritual-cards}" style="font-size:12px; color:var(--garnet); font-weight:600; text-decoration:none;">Manage All Cards &rarr;</a>
+                        </div>
+                        
+                        <div th:if="${ritualCards == null or ritualCards.isEmpty()}" style="text-align:center; padding:20px; background:var(--bg-light); border-radius:8px; border:1px solid var(--border);">
+                            <p style="font-size:12px; color:var(--text-muted);">No ritual cards created yet.</p>
+                            <a th:href="@{/admin/ritual-cards/new}" style="font-size:12px; color:var(--gold); font-weight:600; text-decoration:none;">Add your first card</a>
+                        </div>
+
+                        <div th:if="${ritualCards != null and !ritualCards.isEmpty()}" 
+                             style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:12px;">
+                            <div th:each="c : ${ritualCards}" th:if="${c.isActive}"
+                                 style="background:#fff; border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;">
+                                <div style="height:100px; background:#f9f8f6; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                                    <img th:if="${c.imageUrl != null}" th:src="${c.imageUrl}" style="width:100%; height:100%; object-fit:contain;"/>
+                                    <i th:unless="${c.imageUrl != null}" class="bi bi-image" style="font-size:24px; color:#ddd;"></i>
+                                </div>
+                                <div style="padding:10px;">
+                                    <div style="font-size:12px; font-weight:600; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" th:text="${c.title}">Title</div>
+                                    <div style="font-size:10px; color:var(--text-muted); margin-bottom:8px;" th:text="${'Order: ' + c.displayOrder}">Order: 0</div>
+                                    <a th:href="@{/admin/ritual-cards/edit/{id}(id=${c.cardId})}" 
+                                       style="display:block; text-align:center; padding:5px; background:var(--bg-light); border-radius:6px; font-size:10px; color:var(--navy); text-decoration:none; font-weight:600; border:1px solid var(--border);">Edit Card</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" style="padding: 12px 30px;">💾 Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>House of Vegam | Truly Bare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/house-of-vegam.css}">
+</head>
+
+<body>
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <main>
+        <!-- ═══ HERO ═══ -->
+        <section class="vegam-hero">
+            <div class="vegam-hero-content animate-fade-up">
+                <span class="hero-est">Est. 2024</span>
+                <h1>House of Vegam</h1>
+                <div class="vegam-hero-line"><span class="vegam-hero-gem"></span></div>
+                <p class="hero-tag">The Ancestral Home of Potent Botanical Healing</p>
+            </div>
+            <div class="hero-scroll-cue">
+                <span>Explore</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+        </section>
+
+        <!-- ═══ PHILOSOPHY ═══ -->
+        <section class="vegam-philosophy">
+            <blockquote>
+                "Where 108 botanical extracts converge with modern science —
+                each formulation a testament to the art of restoring balance."
+            </blockquote>
+            <cite>— The House of Vegam</cite>
+        </section>
+
+        <!-- ═══ SIGNATURE STORE ═══ -->
+        <section class="vegam-store-section">
+            <div class="vegam-store-grid">
+                <div class="vegam-store-img animate-fade-up">
+                    <img th:src="@{/assets/images/signature-store.png}" alt="Signature Store">
+                </div>
+                <div class="vegam-store-text animate-fade-up" style="animation-delay: 0.15s;">
+                    <span class="eyebrow">In the Ritual</span>
+                    <h2>Visit a<br>Signature Store</h2>
+                    <div class="store-divider"><span class="store-divider-dot"></span></div>
+                    <p>
+                        Experience our formulations in person at one of our meticulously designed spaces,
+                        guided by our skincare experts.
+                    </p>
+                    <a href="#collections" class="vegam-btn">Explore Collection <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ PRODUCT SHOWCASE ═══ -->
+        <section class="vegam-products" id="collections">
+            <div class="vegam-section-header animate-fade-up">
+                <span class="badge">The Collections</span>
+                <h2>Signature Formulations</h2>
+                <div class="vegam-section-divider"><span class="vegam-section-divider-dot"></span></div>
+                <p>
+                    Explore the distinct results of ancestral wisdom and scientific precision.
+                    Each formulation is a cornerstone of the House of Vegam.
+                </p>
+            </div>
+
+            <div class="vegam-product-grid">
+                <!-- DYNAMIC PRODUCTS -->
+                <article class="vegam-product-card animate-fade-up" th:each="product, stat : ${products}"
+                    th:if="${stat.index < 4}"
+                    th:data-product-id="${product.productId}"
+                    th:data-name="${product.name}"
+                    th:data-subtitle="${product.subtitle}"
+                    th:data-desc="${product.description}"
+                    th:data-price="${product.price}"
+                    th:data-img="${product.imageUrl}"
+                    th:data-ingredients="${product.ingredients}"
+                    th:data-benefits="${product.benefits}"
+                    th:data-usage="${product.usageInstructions}"
+                    th:data-warnings="${product.warnings}">
+                    <div class="card-visual">
+                        <a th:href="@{'/product/' + ${product.productId}}">
+                            <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                th:alt="${product.name}"
+                                th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-badges" style="position: static; margin-bottom: 10px;">
+                            <span class="card-badge" th:text="${product.category != null ? product.category.name : 'Signature Formulation'}">Category</span>
+                        </div>
+                        <a th:href="@{'/product/' + ${product.productId}}"
+                            style="text-decoration: none; color: inherit;">
+                            <h3 th:text="${product.name}">Product Name</h3>
+                        </a>
+                        <p class="card-desc" th:if="${product.subtitle != null and !#strings.isEmpty(product.subtitle)}"
+                            th:text="${product.subtitle}"></p>
+                        <p class="card-desc"
+                            th:if="${(product.subtitle == null or #strings.isEmpty(product.subtitle)) and product.description != null and !#strings.isEmpty(product.description)}"
+                            th:text="${product.description}"></p>
+                        <div class="card-action" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span class="price"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                <span th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                                      style="font-size: 11px; color: #f39c12; font-weight: 700; text-transform: uppercase; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 11px;"></i> Limited Stock
+                                </span>
+                                <span th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                      style="font-size: 11px; color: #e74c3c; font-weight: 700; text-transform: uppercase; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                                    <i class="bi bi-slash-circle-fill" style="font-size: 11px;"></i> Sold Out
+                                </span>
+                            </div>
+                            <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="card-add-btn" th:onclick="'addToCart(this, ' + ${product.price} + ')'">
+                                <i class="bi bi-bag-plus"></i>
+                            </button>
+                            <button th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" class="card-add-btn" disabled style="opacity: 0.6; cursor: not-allowed; background: #95a5a6; border: none;">
+                                <i class="bi bi-slash-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <!-- ═══ CLINIC DETAILS SECTION ═══ -->
+        <section class="vegam-appt" id="clinic-details">
+
+            <div class="appt-inner">
+
+                <!-- Left — Clinic & Doctor Details -->
+                <div class="appt-doctor-side">
+                    <span class="appt-eyebrow">Expert Consultation</span>
+
+                    <div class="clinic-rating"
+                        style="display: flex; align-items: center; gap: 4px; color: var(--gold); margin-bottom: 12px; font-size: 14px;">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-half"></i>
+                        <span
+                            style="color: rgba(255,255,255,0.7); font-size: 10px; margin-left: 8px; letter-spacing: 2px; text-transform: uppercase; font-family: var(--font-sans);">4.8
+                            / 5 Rating</span>
+                    </div>
+
+                    <h2 class="appt-heading">VEGAM PAIN<br><em>RELIEF CLINIC</em></h2>
+                    <div class="appt-divider"><span class="appt-gem"></span></div>
+
+                    <div class="doctor-card">
+                        <div class="doctor-avatar">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <div class="doctor-info">
+                            <span class="doctor-badge">Expert Consultation</span>
+                            <h3 class="doctor-name">Orthopaedic Specialist</h3>
+                            <p class="doctor-specialty">Orthopaedic Products &amp; Pain Management</p>
+                        </div>
+                    </div>
+
+                    <div class="availability-block">
+                        <span class="avail-label"><i class="bi bi-calendar3"></i> Availability</span>
+                        <div class="avail-days">Monday — Saturday</div>
+                        <div class="time-slots">
+                            <div class="time-slot">
+                                <i class="bi bi-sun"></i>
+                                <span>10:00 AM – 1:00 PM</span>
+                            </div>
+                            <div class="time-slot">
+                                <i class="bi bi-moon-stars"></i>
+                                <span>5:00 PM – 6:30 PM</span>
+                            </div>
+                        </div>
+                        <div class="walk-in-banner"
+                            style="margin-top:24px; padding: 16px 20px; background: rgba(201,168,76,0.12); border-radius: 12px; border: 1px dashed rgba(201,168,76,0.4); display: flex; align-items: center; gap: 14px;">
+                            <i class="bi bi-info-circle-fill" style="color:var(--gold); font-size: 24px;"></i>
+                            <span
+                                style="color:white; font-size: 16px; font-weight: 400; line-height: 1.4; letter-spacing: 0.3px;">
+                                <strong
+                                    style="color: var(--gold-light); display:block; font-weight: 500; font-size: 15px; margin-bottom: 2px;">Walk-ins
+                                    Welcome</strong>
+                                First come, first serve.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right — Location & Directions -->
+                <div class="appt-form-side">
+                    <h3 class="form-heading">Visit Our Clinic</h3>
+                    <p class="form-sub">We invite you to experience potent botanical healing in person.</p>
+
+                    <div class="clinic-details" style="margin-bottom: 32px;">
+                        <div class="clinic-row">
+                            <i class="bi bi-geo-alt"></i>
+                            <div>
+                                <span class="clinic-label">Address</span>
+                                <span class="clinic-value">12/87 Sathy cross no:1<br>Gandhipuram, Coimbatore
+                                    641012</span>
+                            </div>
+                        </div>
+                        <div class="clinic-row">
+                            <i class="bi bi-telephone"></i>
+                            <div>
+                                <span class="clinic-label">Phone</span>
+                                <a href="tel:918012954109" class="clinic-value clinic-link">+91 80129 54109</a>
+                            </div>
+                        </div>
+                        <div class="clinic-row">
+                            <i class="bi bi-whatsapp"></i>
+                            <div>
+                                <span class="clinic-label">WhatsApp</span>
+                                <a href="https://wa.me/918012954109" target="_blank"
+                                    class="clinic-value clinic-link">Message Us</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://maps.app.goo.gl/4tCc4KEchDHfymz99" target="_blank"
+                        class="appt-submit-btn map-route-btn" style="text-decoration: none;">
+                        <i class="bi bi-map"></i> Open Route in Maps
+                    </a>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <th:block th:replace="~{fragments :: quick_view_modal}"></th:block>
+    <script th:src="@{/js/home.js}"></script>
+</body>
+
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Add / Edit Banner')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('slides')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title" th:text="${slide.slideId != null} ? '✏ Edit Banner' : '➕ Add New Banner'">Banner Form</span>
+        <a th:href="@{/admin/slides}" class="btn btn-outline">← Back to Banners</a>
+    </div>
+
+    <div class="content-area">
+        <form th:action="@{/admin/slides/save}" method="post" style="max-width:700px;">
+            <input type="hidden" name="slideId" th:value="${slide.slideId}"/>
+
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-header"><h2>Banner Content</h2></div>
+                <div class="card-body">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label>Headline Title *</label>
+                            <input type="text" name="title" th:value="${slide.title}"
+                                   placeholder="e.g. Discover Our Botanical Range" required/>
+                        </div>
+                        <div class="form-group full">
+                            <label>Subtitle / Description</label>
+                            <input type="text" name="subtitle" th:value="${slide.subtitle}"
+                                   placeholder="e.g. Pure ingredients, visible results"/>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label>Button Text</label>
+                            <input type="text" name="buttonText" th:value="${slide.buttonText}"
+                                   placeholder="e.g. Shop Now"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Featured Product (Optional)</label>
+                            <select name="product.productId" id="productSelect" class="form-select" onchange="handleProductChange(this)">
+                                <option value="">— No Specific Product —</option>
+                                <th:block th:each="p : ${products}">
+                                    <option th:value="${p.productId}" 
+                                            th:text="${p.name}"
+                                            th:selected="${slide.product != null and slide.product.productId == p.productId}">Product Name</option>
+                                </th:block>
+                            </select>
+                            <small style="font-size: 10px; color: var(--text-muted);">Selecting a product will automatically set the button link.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Button Link (Target Collection)</label>
+                            <select id="linkSelect" class="form-select" onchange="handleLinkChange(this.value)">
+                                <option value="/products" th:selected="${slide.buttonLink == '/products'}">All Products</option>
+                                <th:block th:each="cat : ${categories}">
+                                    <option th:value="'/products/category/' + ${cat.categoryId}"
+                                            th:text="${cat.name}"
+                                            th:selected="${slide.buttonLink == '/products/category/' + cat.categoryId}">Category</option>
+                                </th:block>
+                                <option value="custom" th:selected="${slide.buttonLink != null and !#strings.startsWith(slide.buttonLink, '/products') and !#strings.startsWith(slide.buttonLink, '/product/')}">Custom URL...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="customLinkGroup" th:style="${slide.buttonLink != null and !#strings.startsWith(slide.buttonLink, '/products') and !#strings.startsWith(slide.buttonLink, '/product/')} ? 'display:block' : 'display:none'">
+                            <label>Custom Link (URL)</label>
+                            <input type="text" name="buttonLink" id="customLinkInput" th:value="${slide.buttonLink}"
+                                   placeholder="/products or https://..." autocomplete="off"/>
+                            <small style="font-size: 10px; color: var(--text-muted);">Relative path or full URL. (External links open in new tab)</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Display Order (lower = shown first)</label>
+                            <input type="number" name="displayOrder" th:value="${slide.displayOrder ?: 0}" min="0"/>
+                        </div>
+                        <div class="form-group" style="justify-content:flex-end; padding-top:24px;">
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                <input type="checkbox" name="isActive" th:checked="${slide.isActive != false}"
+                                       style="width:16px; height:16px;"/>
+                                Show this banner on the homepage
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button type="submit" class="btn btn-primary">💾 Save Banner</button>
+                <a th:href="@{/admin/slides}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function handleProductChange(select) {
+    const productId = select.value;
+    const linkSelect = document.getElementById('linkSelect');
+    const customGroup = document.getElementById('customLinkGroup');
+    const customInput = document.getElementById('customLinkInput');
+    
+    if (productId) {
+        const productLink = '/product/' + productId;
+        customInput.value = productLink;
+        customGroup.style.display = 'none';
+        
+        // Deselect other options in linkSelect
+        linkSelect.value = ''; // Or just leave it as is if no match
+    }
+}
+
+function handleLinkChange(val) {
+    const customGroup = document.getElementById('customLinkGroup');
+    const customInput = document.getElementById('customLinkInput');
+    
+    if (val === 'custom') {
+        customGroup.style.display = 'block';
+        if (customInput.value.startsWith('/product') || customInput.value.startsWith('/products')) {
+            customInput.value = '';
+        }
+        customInput.focus();
+    } else {
+        customGroup.style.display = 'none';
+        customInput.value = val;
+    }
+}
+
+function previewImage(url) {
+    const container = document.getElementById('previewContainer');
+    const img       = document.getElementById('imagePreview');
+    if (url && url.trim()) {
+        container.style.display = 'block';
+        img.src = url;
+        img.style.opacity = '1';
+    } else {
+        container.style.display = 'none';
+    }
+}
+</script>
+</body>
+</html>

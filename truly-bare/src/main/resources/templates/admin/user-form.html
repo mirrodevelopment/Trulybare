@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Edit User')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('users')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title">👤 Edit User Profile</span>
+        <div class="admin-badge">
+            <img th:src="@{/assets/images/logo.png}" class="admin-avatar" alt="Admin">
+            <span>Admin</span>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-header">
+                <h2>User Information</h2>
+                <a th:href="@{/admin/users}" class="btn btn-outline btn-sm">Cancel</a>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/users/save}" th:object="${user}" method="post">
+                    <input type="hidden" th:field="*{userId}"/>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" th:field="*{fullName}" required placeholder="e.g. John Doe"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" th:field="*{email}" required placeholder="e.g. john@example.com"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" th:field="*{phone}" required placeholder="e.g. 9876543210"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Customer Status</label>
+                            <select th:field="*{customerStatus}">
+                                <option value="Bronze">Bronze</option>
+                                <option value="Silver">Silver</option>
+                                <option value="Gold">Gold</option>
+                                <option value="Platinum">Platinum</option>
+                                <option value="Elite">Elite</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Loyalty Points</label>
+                            <input type="number" th:field="*{loyaltyPoints}" min="0"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Orders (Manual Override)</label>
+                            <input type="number" th:field="*{totalOrders}" min="0"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select th:field="*{role}" th:disabled="${user.email == 'Trulybare@admin'}">
+                                <option value="USER">USER</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+                            <input type="hidden" th:if="${user.email == 'Trulybare@admin'}" name="role" value="ADMIN"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Account Status</label>
+                            <select th:field="*{isActive}" th:disabled="${user.email == 'Trulybare@admin'}">
+                                <option th:value="true">Active</option>
+                                <option th:value="false">Suspended</option>
+                            </select>
+                            <input type="hidden" th:if="${user.email == 'Trulybare@admin'}" name="isActive" value="true"/>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>New Password (leave blank to keep current)</label>
+                            <input type="password" name="newPassword" placeholder="Enter new password to change"/>
+                        </div>
+                    </div>
+
+                    <hr class="gold-rule"/>
+
+                    <div style="display:flex; justify-content:flex-end; gap:12px;">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

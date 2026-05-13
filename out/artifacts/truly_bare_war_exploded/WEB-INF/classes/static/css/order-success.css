@@ -1,0 +1,234 @@
+/* ================================================== */
+/* ORDER SUCCESS — Luxury Confirmation Page           */
+/* ================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Playfair+Display:wght@400;500&family=Inter:wght@300;400;500&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+.success-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(160deg, #FAF6F0 0%, #F5EDE2 50%, #FBF8F3 100%);
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    font-family: 'Inter', sans-serif;
+}
+
+.success-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 20% 20%, rgba(232,196,196,0.20) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(201,168,76,0.10) 0%, transparent 55%);
+    pointer-events: none;
+}
+
+.success-card {
+    max-width: 500px;
+    width: 100%;
+    background: rgba(250, 248, 245, 0.94);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 56px 48px;
+    border-radius: 28px;
+    text-align: center;
+    box-shadow: 0 32px 80px rgba(28, 28, 26, 0.08),
+                0 8px 24px rgba(139,26,26,0.04),
+                inset 0 1px 0 rgba(250,248,245,0.95);
+    border: 1px solid rgba(201, 168, 76, 0.15);
+    transform: translateY(32px);
+    opacity: 0;
+    animation: cardEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    position: relative;
+    overflow: hidden;
+}
+
+.success-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8B1A1A, #C9A84C, #8B1A1A);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@keyframes cardEntrance {
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Success Icon ── */
+.success-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(232,196,196,0.15) 100%);
+    color: #C9A84C;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    margin: 0 auto 28px;
+    border: 1.5px solid rgba(201, 168, 76, 0.30);
+    box-shadow: 0 8px 28px rgba(201, 168, 76, 0.18),
+                0 0 0 8px rgba(201, 168, 76, 0.06);
+    animation: iconPop 0.7s 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes iconPop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    80%  { transform: scale(1.1); }
+    100% { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Typography ── */
+.success-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: #001A35;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.user-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: #8B1A1A;
+    font-size: 34px;
+    display: block;
+    margin-bottom: 22px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+/* Decorative divider */
+.success-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 auto 22px;
+    width: 180px;
+}
+.success-divider::before,
+.success-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.5));
+}
+.success-divider::after {
+    background: linear-gradient(270deg, transparent, rgba(201,168,76,0.5));
+}
+.success-divider-gem {
+    width: 5px; height: 5px;
+    background: #C9A84C;
+    transform: rotate(45deg);
+    flex-shrink: 0;
+}
+
+.success-msg {
+    font-size: 14px;
+    color: #7A7775;
+    line-height: 1.75;
+    margin-bottom: 30px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.2px;
+}
+
+/* ── Order Info Box ── */
+.order-info {
+    background: rgba(249, 246, 242, 0.8);
+    padding: 22px 24px;
+    border-radius: 14px;
+    margin-bottom: 32px;
+    text-align: left;
+    border: 1px solid rgba(201,168,76,0.12);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.info-row:last-child { margin-bottom: 0; }
+
+.info-label {
+    color: #9E9E9E;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 9px;
+    font-weight: 500;
+}
+
+.info-value {
+    color: #001A35;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+}
+
+/* ── Buttons ── */
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-primary-success {
+    display: block;
+    padding: 16px;
+    background: #8B1A1A;
+    color: #FAF8F5;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    font-weight: 400;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(139,26,26,0.22);
+}
+
+.btn-primary-success:hover {
+    background: #6B0F0F;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(139,26,26,0.30);
+}
+
+.btn-outline {
+    display: block;
+    padding: 15px;
+    border: 1.5px solid rgba(201,168,76,0.35);
+    color: #C9A84C;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    font-weight: 400;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.btn-outline:hover {
+    background: rgba(201,168,76,0.08);
+    border-color: #C9A84C;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+    .success-card { padding: 40px 28px; border-radius: 20px; }
+}

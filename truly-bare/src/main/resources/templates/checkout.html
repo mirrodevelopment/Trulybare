@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Checkout | Truly Bare Luxury Skincare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/checkout.css}">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a th:href="@{/home}" class="logo-box">
+                    <img th:src="@{/assets/images/logo.png}" src="/assets/images/logo.png" alt="Truly Bare" class="logo-box-img">
+                </a>
+            </div>
+            
+            <a th:href="@{/home}" class="brand-text-logo-centered">
+                <span class="initial">T</span>RULY <span style="margin: 0 4px;"></span> <span class="initial">B</span>ARE
+            </a>
+            
+            <div class="header-icons">
+                <a th:href="@{/cart}"><i class="bi bi-bag"></i></a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Checkout Header -->
+            <div class="checkout-header">
+                <div class="checkout-steps">
+                    <div class="step completed">
+                        <span class="step-num"><i class="bi bi-check"></i></span>
+                        <span>Cart</span>
+                    </div>
+                    <div class="step active">
+                        <span class="step-num">2</span>
+                        <span>Checkout</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-num">3</span>
+                        <span>Payment</span>
+                    </div>
+                </div>
+                <h1>Perfecting Your Order</h1>
+            </div>
+
+            <form id="checkoutForm" th:action="@{/checkout/place-order}" method="post" onsubmit="return validateAndSubmitOrder(event)">
+                <div class="checkout-layout">
+                    
+                    <!-- Left Side: Shipping & Payment -->
+                    <div class="checkout-main">
+                        
+                        <!-- Shipping Information -->
+                        <section class="checkout-section">
+                            <h2 class="section-title"><i class="bi bi-geo-alt"></i> Shipping Address</h2>
+                            
+                            <div th:if="${addresses != null and !addresses.isEmpty()}" class="address-grid" id="addressGrid">
+                                <label th:each="addr : ${addresses}" class="address-card" th:classappend="${addrStat.first} ? 'selected'">
+                                    <input type="radio" name="addressId" th:value="${addr.addressId}" th:checked="${addrStat.first}" required onchange="updateAddressSelection(this)">
+                                    <span class="address-name" th:text="${addr.fullName}">Home</span>
+                                    <span class="address-details">
+                                        <th:block th:text="${addr.addressLine1}"></th:block><br>
+                                        <th:block th:text="${addr.city + ', ' + addr.state + ' - ' + addr.pincode}"></th:block>
+                                    </span>
+                                </label>
+
+                                <!-- Other / New Address Option -->
+                                <label class="address-card other-address-card" id="otherAddressCard">
+                                    <input type="radio" name="addressId" value="other" onchange="updateAddressSelection(this)">
+                                    <span class="address-name"><i class="bi bi-plus-circle" style="margin-right:6px;"></i>Other Address</span>
+                                    <span class="address-details" style="color:var(--text-muted);">Enter a different delivery address</span>
+                                </label>
+                            </div>
+
+                            <!-- Custom Address Fields (shown when 'Other' is selected) -->
+                            <div id="customAddressFields" style="display:none; margin-top:16px; display:none;">
+                                <input type="hidden" name="customAddress" id="customAddressValue">
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                                    <div style="grid-column:1/-1;">
+                                        <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;">Full Name</label>
+                                        <input type="text" id="ca_name" placeholder="Recipient name" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" oninput="buildCustomAddress()">
+                                    </div>
+                                    <div style="grid-column:1/-1;">
+                                        <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;">Address Line</label>
+                                        <input type="text" id="ca_line" placeholder="Street, Building, Flat no." style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" oninput="buildCustomAddress()">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;">City</label>
+                                        <input type="text" id="ca_city" placeholder="City" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" oninput="buildCustomAddress()">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;">State</label>
+                                        <input type="text" id="ca_state" placeholder="State" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" oninput="buildCustomAddress()">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;">Pincode</label>
+                                        <input type="text" id="ca_pin" placeholder="Pincode" maxlength="6" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" oninput="buildCustomAddress()">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;">Phone</label>
+                                        <input type="text" id="ca_phone" placeholder="Contact number" maxlength="10" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" oninput="buildCustomAddress()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div th:if="${addresses == null or addresses.isEmpty()}" style="text-align:center; padding: 20px;">
+                                <p style="color:var(--text-muted); margin-bottom:20px;">No saved addresses found.</p>
+                                <a th:href="@{/profile}" class="btn-checkout" style="display:inline-block; max-width:200px;">Add New Address</a>
+                            </div>
+                        </section>
+
+                        <!-- Payment Method -->
+                        <section class="checkout-section">
+                            <h2 class="section-title"><i class="bi bi-credit-card"></i> Payment Method</h2>
+                            
+                            <label class="payment-option">
+                                <input type="radio" name="paymentMethod" value="ONLINE" required onchange="updatePaymentSelection(this)">
+                                <i class="bi bi-shield-check payment-icon"></i>
+                                <div>
+                                    <span style="font-weight:500; display:block;">Secure Online Payment</span>
+                                    <span style="font-size:12px; color:var(--text-muted);">UPI, Credit/Debit Card, Netbanking</span>
+                                </div>
+                            </label>
+
+                            <label class="payment-option selected">
+                                <input type="radio" name="paymentMethod" value="COD" checked onchange="updatePaymentSelection(this)">
+                                <i class="bi bi-cash payment-icon"></i>
+                                <div>
+                                    <span style="font-weight:500; display:block;">Cash on Delivery</span>
+                                    <span style="font-size:12px; color:var(--text-muted);">Pay when your formulations arrive</span>
+                                </div>
+                            </label>
+                        </section>
+                    </div>
+
+                    <!-- Right Side: Sticky Summary -->
+                    <aside class="summary-sticky">
+                        <div class="summary-card">
+                            <h3 class="summary-title">Order Summary</h3>
+                            
+                            <div class="mini-items">
+                                <div th:each="item : ${cart.items}" class="mini-item">
+                                    <img th:src="${item.productImage}" class="mini-item-img">
+                                    <div class="mini-item-info">
+                                        <span class="mini-item-name" th:text="${item.productName}">Product Name</span>
+                                        <span class="mini-item-price">Qty: <span th:text="${item.quantity}"></span> &times; ₹<span th:text="${item.price}"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <span>Subtotal</span>
+                                <span>₹<span id="subtotalVal" th:text="${cart.subtotal}"></span></span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Shipping</span>
+                                <span id="shippingVal" th:text="${cart.shipping == 0 ? 'FREE' : '₹' + cart.shipping}">FREE</span>
+                            </div>
+                            
+                            <!-- Loyalty Points Redemption -->
+                            <div class="loyalty-redemption" style="border-top: 1px dashed #eee; margin-top: 15px; padding-top: 15px; margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-size: 13px; font-weight: 500; color: var(--sapphire-gold);">
+                                        <i class="bi bi-star-fill"></i> Loyalty Points
+                                    </span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">
+                                        Available: <strong th:text="${user.loyaltyPoints != null ? user.loyaltyPoints : 0}">0</strong>
+                                    </span>
+                                </div>
+                                <div class="points-input-group" style="display: flex; gap: 10px;">
+                                    <input type="number" name="pointsToUse" id="pointsToUse" 
+                                           class="form-control" placeholder="Points to use" 
+                                           th:max="${user.loyaltyPoints}" min="0"
+                                           style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; flex: 1;"
+                                           oninput="calculatePointsDiscount()">
+                                    <button type="button" onclick="applyMaxPoints()" 
+                                            style="padding: 0 12px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; color: #666; cursor: pointer;">
+                                        MAX
+                                    </button>
+                                </div>
+                                <div id="pointsMessage" style="font-size: 11px; margin-top: 5px; min-height: 15px;"></div>
+                            </div>
+
+                            <div class="summary-item" id="discountRow" style="display: none; color: #27ae60;">
+                                <span>Points Discount</span>
+                                <span>-₹<span id="discountVal">0</span></span>
+                            </div>
+
+                            <div class="summary-total">
+                                <span>Total</span>
+                                <span>₹<span id="totalVal" th:text="${cart.total}">0</span></span>
+                            </div>
+                            
+                            <div th:if="${error}" style="background-color: #f82b2b1a; color: var(--bold-red); padding: 12px; margin-bottom: 20px; text-align: center; border-radius: 4px;" th:text="${error}"></div>
+                            
+                            <button type="submit" class="btn-place-order" th:disabled="${addresses == null or addresses.isEmpty()}">
+                                <span th:if="${addresses == null or addresses.isEmpty()}">Add Address to Continue</span>
+                                <span th:unless="${addresses == null or addresses.isEmpty()}">Complete Purchase</span>
+                            </button>
+                            
+                            <p style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:20px;">
+                                By clicking 'Complete Purchase', you agree to our Terms of Service.
+                            </p>
+                        </div>
+                    </aside>
+
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <th:block th:replace="~{fragments :: main_footer}"></th:block>
+
+    <script th:inline="javascript">
+        function updateAddressSelection(radio) {
+            document.querySelectorAll('.address-card').forEach(card => card.classList.remove('selected'));
+            radio.closest('.address-card').classList.add('selected');
+
+            const customFields = document.getElementById('customAddressFields');
+            if (radio.value === 'other') {
+                customFields.style.display = 'block';
+                // Remove 'required' from the addressId radios since custom is chosen
+                document.querySelectorAll('input[name="addressId"]').forEach(r => r.required = false);
+            } else {
+                customFields.style.display = 'none';
+                // Reset custom fields
+                ['ca_name','ca_line','ca_city','ca_state','ca_pin','ca_phone'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+                document.getElementById('customAddressValue').value = '';
+            }
+        }
+
+        function buildCustomAddress() {
+            const name  = document.getElementById('ca_name')?.value.trim()  || '';
+            const line  = document.getElementById('ca_line')?.value.trim()  || '';
+            const city  = document.getElementById('ca_city')?.value.trim()  || '';
+            const state = document.getElementById('ca_state')?.value.trim() || '';
+            const pin   = document.getElementById('ca_pin')?.value.trim()   || '';
+            const phone = document.getElementById('ca_phone')?.value.trim() || '';
+            const combined = `${name} | ${line}, ${city}, ${state} - ${pin} | Ph: ${phone}`;
+            document.getElementById('customAddressValue').value = combined;
+        }
+
+        function updatePaymentSelection(radio) {
+            document.querySelectorAll('.payment-option').forEach(option => option.classList.remove('selected'));
+            radio.closest('.payment-option').classList.add('selected');
+        }
+
+        const originalTotal = parseFloat(/*[[${cart.total}]]*/ 0);
+        const availablePoints = parseInt(/*[[${user.loyaltyPoints != null ? user.loyaltyPoints : 0}]]*/ 0);
+
+        function calculatePointsDiscount() {
+            const pointsInput = document.getElementById('pointsToUse');
+            const discountRow = document.getElementById('discountRow');
+            const discountVal = document.getElementById('discountVal');
+            const totalVal = document.getElementById('totalVal');
+            const pointsMessage = document.getElementById('pointsMessage');
+            
+            let points = parseInt(pointsInput.value) || 0;
+            
+            if (points < 0) points = 0;
+            if (points > availablePoints) {
+                points = availablePoints;
+                pointsInput.value = points;
+                pointsMessage.innerHTML = '<span style="color:var(--bold-red)">You only have ' + availablePoints + ' points.</span>';
+            } else {
+                pointsMessage.innerHTML = '';
+            }
+            
+            // 1 point = 1 INR
+            let discount = points;
+            if (discount > originalTotal) {
+                discount = originalTotal;
+                points = Math.floor(originalTotal);
+                pointsInput.value = points;
+            }
+            
+            if (discount > 0) {
+                discountRow.style.display = 'flex';
+                discountVal.innerText = discount.toFixed(2);
+                totalVal.innerText = (originalTotal - discount).toFixed(2);
+            } else {
+                discountRow.style.display = 'none';
+                totalVal.innerText = originalTotal.toFixed(2);
+            }
+        }
+
+        function applyMaxPoints() {
+            const pointsInput = document.getElementById('pointsToUse');
+            const maxUsable = Math.min(availablePoints, Math.floor(originalTotal));
+            pointsInput.value = maxUsable;
+            calculatePointsDiscount();
+        }
+
+        function validateAndSubmitOrder(event) {
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+            // Validate custom address fields if 'Other' is selected
+            const selectedAddress = document.querySelector('input[name="addressId"]:checked');
+            if (selectedAddress && selectedAddress.value === 'other') {
+                const name  = document.getElementById('ca_name')?.value.trim();
+                const line  = document.getElementById('ca_line')?.value.trim();
+                const city  = document.getElementById('ca_city')?.value.trim();
+                const pin   = document.getElementById('ca_pin')?.value.trim();
+                if (!name || !line || !city || !pin) {
+                    alert('Please fill in all required address fields (Name, Address, City, Pincode).');
+                    event.preventDefault();
+                    return false;
+                }
+                buildCustomAddress();
+                // Set addressId to -1 to signal backend to use customAddress
+                selectedAddress.value = '-1';
+            }
+
+            const pointsInput = document.getElementById('pointsToUse');
+            const points = parseInt(pointsInput.value) || 0;
+            if (points > availablePoints) {
+                alert("Insufficient loyalty points!");
+                event.preventDefault();
+                return false;
+            }
+
+            const button = event.target.querySelector('button[type="submit"]');
+
+            if (paymentMethod && paymentMethod.value === 'ONLINE') {
+                event.preventDefault();
+                if (button) {
+                    button.innerHTML = '<i class="bi bi-hourglass"></i> Processing...';
+                    button.classList.add('disabled');
+                    button.disabled = true;
+                }
+
+                // Create Razorpay order
+                const formData = new FormData();
+                formData.append('pointsToUse', points);
+
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+                
+                const fetchHeaders = {};
+                if (csrfToken && csrfHeader) {
+                    fetchHeaders[csrfHeader] = csrfToken;
+                }
+
+                fetch('/api/payment/create-order', {
+                    method: 'POST',
+                    headers: fetchHeaders,
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.orderId) {
+                        var options = {
+                            "key": data.keyId,
+                            "amount": data.amount,
+                            "currency": data.currency,
+                            "name": "Truly Bare",
+                            "description": "Order Payment",
+                            "order_id": data.orderId,
+                            "handler": function (response){
+                                // Add hidden inputs for razorpay details
+                                const form = document.getElementById('checkoutForm');
+                                form.insertAdjacentHTML('beforeend', '<input type="hidden" name="razorpayPaymentId" value="' + response.razorpay_payment_id + '">');
+                                form.insertAdjacentHTML('beforeend', '<input type="hidden" name="razorpayOrderId" value="' + response.razorpay_order_id + '">');
+                                form.insertAdjacentHTML('beforeend', '<input type="hidden" name="razorpaySignature" value="' + response.razorpay_signature + '">');
+                                form.submit();
+                            },
+                            "prefill": {
+                                "name": data.userName,
+                                "email": data.userEmail,
+                                "contact": data.userContact
+                            },
+                            "theme": {
+                                "color": "#1C1C1A"
+                            },
+                            "modal": {
+                                "ondismiss": function() {
+                                    if (button) {
+                                        button.innerHTML = 'Complete Purchase';
+                                        button.classList.remove('disabled');
+                                        button.disabled = false;
+                                    }
+                                }
+                            }
+                        };
+                        var rzp1 = new Razorpay(options);
+                        rzp1.open();
+                    } else {
+                        alert("Error creating payment order");
+                        if (button) {
+                            button.innerHTML = 'Complete Purchase';
+                            button.classList.remove('disabled');
+                            button.disabled = false;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Error creating payment order");
+                    if (button) {
+                        button.innerHTML = 'Complete Purchase';
+                        button.classList.remove('disabled');
+                        button.disabled = false;
+                    }
+                });
+
+                return false;
+            }
+
+            if (button) {
+                button.innerHTML = '<i class="bi bi-hourglass"></i> Processing...';
+                button.classList.add('disabled');
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>

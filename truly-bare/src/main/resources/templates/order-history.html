@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Truly Bare | Order History</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <style>
+        .filter-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            padding: 5px;
+        }
+
+        .filter-chip {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            background: #fff;
+            color: var(--text-medium);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--sapphire-gold);
+            color: var(--sapphire-gold);
+        }
+
+        .filter-chip.active {
+            background: var(--bold-red);
+            color: #fff;
+            border-color: var(--bold-red);
+            box-shadow: 0 4px 12px rgba(139, 26, 26, 0.2);
+        }
+
+        .history-container {
+            max-width: 1000px;
+            margin: 40px auto 80px;
+            padding: 0 20px;
+        }
+
+        .history-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .history-title {
+            font-family: var(--font-display);
+            font-size: 38px;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .history-subtitle {
+            font-size: 14px;
+            color: var(--text-medium);
+            font-style: italic;
+        }
+
+        .back-to-profile {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--sapphire-gold);
+            text-decoration: none;
+            font-size: 12px;
+            margin-bottom: 25px;
+            font-weight: 500;
+            transition: gap 0.3s ease;
+        }
+
+        .back-to-profile:hover {
+            gap: 12px;
+        }
+
+        .btn-invoice {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            border: 1px solid #1c1c1c;
+            background: transparent;
+            color: #1c1c1c;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+        }
+
+        .btn-invoice:hover {
+            background: #1c1c1c;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-invoice i {
+            font-size: 14px;
+        }
+
+        /* Premium Stats Card */
+        .premium-stats-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 35px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(201,168,76,0.2);
+        }
+
+        .stats-banner-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: #9C8875;
+            font-weight: 700;
+        }
+
+        .stat-val {
+            font-family: 'Bodoni Moda', serif;
+            font-size: 28px;
+            color: #17110e;
+            font-weight: 600;
+        }
+        
+        .stat-val.red { color: #8B1A1A; }
+        .stat-val.gold { color: #C9A84C; font-style: italic; }
+        
+        .stats-divider {
+            width: 1px;
+            height: 50px;
+            background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.3), transparent);
+        }
+
+        .progress-container {
+            border-top: 1px solid rgba(201,168,76,0.15);
+            margin-top: 30px;
+            padding-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .premium-stats-card {
+                padding: 30px 20px;
+            }
+            .stats-banner-flex {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px 15px;
+            }
+            .stats-divider {
+                display: none;
+            }
+            .stat-val {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <div class="history-container">
+        <a th:href="@{/profile}" class="back-to-profile">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+
+        <div class="history-header">
+            <h1 class="history-title"><span th:text="${user.fullName}" style="color: var(--bold-red);">User</span>'s Order <i>Archives</i></h1>
+            <p class="history-subtitle">Trace your botanical acquisitions and ritual history.</p>
+        </div>
+
+        <!-- Loyalty / Spending Stats -->
+        <div class="premium-stats-card">
+            <div class="stats-banner-flex">
+                <div class="stat-item">
+                    <span class="stat-label">Total Spent</span>
+                    <span class="stat-val red" th:text="'₹' + ${#numbers.formatDecimal(totalSpent, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                </div>
+                <div class="stats-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Orders</span>
+                    <span class="stat-val" th:text="${orderCount}">0</span>
+                </div>
+                <div class="stats-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-label">Member Tier</span>
+                    <span class="stat-val gold" th:text="${#strings.toUpperCase(memberStatus)}">BRONZE</span>
+                </div>
+                <div class="stats-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-label">Loyalty Points</span>
+                    <span class="stat-val" th:text="${user.loyaltyPoints != null ? user.loyaltyPoints : 0}">0</span>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; font-size: 0.85rem; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 1px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: baseline; gap: 5px;">
+                        <strong th:text="${orderCount}" style="color: #c9a84c; font-size: 1.3rem; font-family: 'Bodoni Moda', serif;">0</strong> 
+                        <span style="font-size: 10px; letter-spacing: 1.5px;">Orders Placed</span>
+                    </div>
+                    
+                    <div th:if="${nextTierOrders != -1}" style="display: flex; align-items: center; gap: 15px;">
+                        <span style="color: #e0e0e0; font-size: 1.2rem; font-weight: 300;">|</span>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                            <strong th:text="${ordersToNextTier}" style="color: #c9a84c; font-size: 1.3rem; font-family: 'Bodoni Moda', serif;">0</strong> 
+                            <span style="font-size: 10px; letter-spacing: 1.5px;">Orders To <span th:text="${nextTierOrders == 10 ? 'SILVER' : nextTierOrders == 25 ? 'GOLD' : nextTierOrders == 50 ? 'PLATINUM' : nextTierOrders == 100 ? 'DIAMOND' : 'ELITE'}">NEXT</span></span>
+                        </div>
+                    </div>
+
+                    <div th:if="${nextTierOrders == -1}" style="display: flex; align-items: center; gap: 15px;">
+                        <span style="color: #e0e0e0; font-size: 1.2rem; font-weight: 300;">|</span>
+                        <div style="display: flex; align-items: baseline; gap: 5px;">
+                            <strong style="color: #c9a84c; font-size: 1.3rem; font-family: 'Bodoni Moda', serif;">ELITE</strong> 
+                            <span style="font-size: 10px; letter-spacing: 1.5px;">Status Reached</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="width: 100%; height: 6px; background: #E8E2D9; border-radius: 10px; margin-bottom: 20px; position: relative;">
+                    <div th:styleappend="'width: ' + (${nextTierOrders != -1 ? (orderCount * 100.0 / nextTierOrders) : 100}) + '%;'" style="height: 100%; background: linear-gradient(90deg, #A68B6A, #D4AF37); border-radius: 10px; transition: width 1s ease-in-out; position: relative; display: flex; align-items: center; justify-content: flex-end;">
+                        <i class="bi bi-star-fill" style="color: #D4AF37; font-size: 16px; position: absolute; right: -8px; top: -5px; filter: drop-shadow(0 2px 4px rgba(212,175,55,0.4)); background: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; z-index: 2; border: 1px solid rgba(212,175,55,0.2);"></i>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; font-size: 9px; font-weight: 800; color: #9C8875; text-transform: uppercase; letter-spacing: 2px;">
+                    <span th:text="${memberStatus}">BRONZE</span>
+                    <span th:if="${nextTierOrders != -1}" th:text="${nextTierOrders == 10 ? 'SILVER' : nextTierOrders == 25 ? 'GOLD' : nextTierOrders == 50 ? 'PLATINUM' : nextTierOrders == 100 ? 'DIAMOND' : 'ELITE'}">SILVER</span>
+                    <span th:if="${nextTierOrders == -1}">ELITE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Options -->
+        <div class="filter-container">
+            <div class="filter-chip active" onclick="filterOrders('ALL', this)">All Orders</div>
+            <div class="filter-chip" onclick="filterOrders('ORDERED', this)">Ordered</div>
+            <div class="filter-chip" onclick="filterOrders('OUT_FOR_DELIVERY', this)">Out for Delivery</div>
+            <div class="filter-chip" onclick="filterOrders('DELIVERED', this)">Delivered</div>
+            <div class="filter-chip" onclick="filterOrders('RETURNED', this)">Returns</div>
+        </div>
+
+        <!-- Orders List -->
+        <div id="orderHistoryList">
+            <div th:if="${orders == null or orders.isEmpty()}" class="empty-state" style="padding: 100px 0;">
+                <i class="bi bi-bag-x" style="font-size: 48px; color: var(--sapphire-gold); display:block; margin-bottom:20px;"></i>
+                <h3>No order history found</h3>
+                <p>You haven't placed any orders yet.</p>
+                <a th:href="@{/products}" class="btn-primary" style="margin-top: 25px; display: inline-block;">Start Shopping</a>
+            </div>
+
+            <div th:each="order : ${orders}" class="order-tracker-card animate-fade-up" 
+                 th:data-status="${order.status.name()}"
+                 th:data-group="${#lists.contains({'PENDING', 'CONFIRMED', 'SHIPPED', 'OUT_FOR_DELIVERY'}, order.status.name()) ? 'ORDERED' : order.status.name()}"
+                 style="background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                
+                <!-- Header: Order Number & Price -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1c1c1c;" th:text="${order.orderNumber}">#TB-ORD-154512</h3>
+                            
+                            <!-- Return Status Badge -->
+                            <span th:if="${!#lists.isEmpty(order.returnRequests)}" 
+                                  th:with="rr=${order.returnRequests[0]}"
+                                  th:classappend="${rr.status.name() == 'REJECTED' or rr.status.name() == 'REFUND_FAILED' ? 'badge-danger' : (rr.status.name() == 'COMPLETED' or rr.status.name() == 'REFUND_COMPLETED' ? 'badge-success' : 'badge-warning')}"
+                                  style="font-size: 9px; padding: 2px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff;"
+                                  th:styleappend="${rr.status.name() == 'REJECTED' or rr.status.name() == 'REFUND_FAILED' ? 'background: #e74c3c;' : (rr.status.name() == 'COMPLETED' or rr.status.name() == 'REFUND_COMPLETED' ? 'background: #2ecc71;' : 'background: #f39c12;')}"
+                                  th:text="${#strings.replace(rr.status.name(), '_', ' ')}">
+                                PENDING REVIEW
+                            </span>
+                        </div>
+                        <span style="font-size: 13px; color: #bcbcbc;" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy')}">21 Apr 2026</span>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 700; color: #1c1c1c;" th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">₹1,999.00</div>
+                </div>
+
+                <div style="width: 100%; height: 1px; background: #f2f2f2; margin-bottom: 25px; border: none; border-top: 1px dashed #ddd;"></div>
+
+                <!-- Products -->
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px;">
+                    <div th:each="item : ${order.orderItems}" style="display: inline-flex; align-items: center; gap: 10px; padding: 8px 15px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <img th:src="@{${item.product.imageUrl != null ? item.product.imageUrl : '/assets/images/placeholder.png'}}" style="width: 25px; height: 25px; border-radius: 4px; object-fit: cover;" onerror="this.onerror=null; this.src='/assets/images/placeholder.png';">
+                        <span style="font-size: 12px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.5px;" th:text="${item.product.name}">JOINT STRENGTH</span>
+                        <a th:href="@{'/review/write/' + ${item.product.productId}}" style="font-size: 10px; font-weight: 600; color: #b08d4b; text-decoration: none; margin-left: 5px; text-transform: uppercase;">REVIEW</a>
+                    </div>
+                </div>
+
+                <!-- Premium Tracker ... (rest of tracker stays same) -->
+                <div style="position: relative; margin: 0 40px 60px;">
+                    <!-- Track Line -->
+                    <div style="position: absolute; top: 15px; left: 0; right: 0; height: 2px; background: #e0e0e0; z-index: 1;">
+                        <div th:style="${order.status.name() == 'PENDING' ? 'width: 33%; height: 100%; background: #b08d4b;' : 
+                                       (order.status.name() == 'CONFIRMED' ? 'width: 33%; height: 100%; background: #b08d4b;' :
+                                       (order.status.name() == 'SHIPPED' ? 'width: 66%; height: 100%; background: #b08d4b;' :
+                                       (order.status.name() == 'OUT_FOR_DELIVERY' ? 'width: 83%; height: 100%; background: #b08d4b;' :
+                                       (order.status.name() == 'DELIVERED' ? 'width: 100%; height: 100%; background: #b08d4b;' : 'width: 0%'))))}">
+                        </div>
+                    </div>
+
+                    <!-- Nodes -->
+                    <div style="display: flex; justify-content: space-between; position: relative; z-index: 2;">
+                        <!-- Node: Placed -->
+                        <div style="text-align: center; width: 60px; margin-left: -30px;">
+                            <div style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; background: #b08d4b; color: #fff; font-size: 14px; box-shadow: 0 0 0 4px #fff;">
+                                <i class="bi bi-check2"></i>
+                            </div>
+                            <span style="font-size: 10px; font-weight: 700; color: #1c1c1c; text-transform: uppercase; letter-spacing: 0.5px;">PLACED</span>
+                        </div>
+
+                        <!-- Node: Packed -->
+                        <div style="text-align: center; width: 60px;">
+                            <div th:styleappend="${order.status.name() != 'PENDING' and order.status.name() != 'CANCELLED' ? 'background: #b08d4b; color: #fff;' : 'background: #fff; border: 2px solid #e0e0e0; color: transparent;'}"
+                                 style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 14px; box-shadow: 0 0 0 4px #fff; transition: all 0.3s ease;">
+                                <i class="bi bi-check2"></i>
+                            </div>
+                            <span th:style="${order.status.name() != 'PENDING' and order.status.name() != 'CANCELLED' ? 'color: #1c1c1c;' : 'color: #bcbcbc;'}"
+                                  style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">PACKED</span>
+                        </div>
+
+                        <!-- Node: Shipped -->
+                        <div style="text-align: center; width: 60px;">
+                            <div th:styleappend="${order.status.name() == 'SHIPPED' or order.status.name() == 'OUT_FOR_DELIVERY' or order.status.name() == 'DELIVERED' ? 'background: #b08d4b; color: #fff;' : 'background: #fff; border: 2px solid #e0e0e0; color: transparent;'}"
+                                 style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 14px; box-shadow: 0 0 0 4px #fff; transition: all 0.3s ease;">
+                                <i class="bi bi-check2"></i>
+                            </div>
+                            <span th:style="${order.status.name() == 'SHIPPED' or order.status.name() == 'OUT_FOR_DELIVERY' or order.status.name() == 'DELIVERED' ? 'color: #1c1c1c;' : 'color: #bcbcbc;'}"
+                                  style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">SHIPPED</span>
+                        </div>
+
+                        <!-- Node: Delivered -->
+                        <div style="text-align: center; width: 60px; margin-right: -30px;">
+                            <div th:styleappend="${order.status.name() == 'DELIVERED' ? 'background: #b08d4b; color: #fff;' : 'background: #fff; border: 2px solid #e0e0e0; color: transparent;'}"
+                                 style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 14px; box-shadow: 0 0 0 4px #fff; transition: all 0.3s ease;">
+                                <i class="bi bi-check2"></i>
+                            </div>
+                            <span th:style="${order.status.name() == 'DELIVERED' ? 'color: #1c1c1c;' : 'color: #bcbcbc;'}"
+                                  style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">DELIVERED</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Message -->
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <!-- Return Specific Messages -->
+                    <div th:if="${!#lists.isEmpty(order.returnRequests)}" th:with="rr=${order.returnRequests[0]}" style="margin-bottom: 10px;">
+                        <p th:if="${rr.status.name() == 'PENDING_REVIEW'}" style="font-size: 13px; font-weight: 600; color: #f39c12;">
+                            <i class="bi bi-clock-history"></i> Your return request is under review.
+                        </p>
+                        <p th:if="${rr.status.name() == 'APPROVED'}" style="font-size: 13px; font-weight: 600; color: #2ecc71;">
+                            <i class="bi bi-check-circle"></i> Return approved! Please follow the instructions in the chat.
+                        </p>
+                        <p th:if="${rr.status.name() == 'REFUND_INITIATED'}" style="font-size: 13px; font-weight: 600; color: #3498db;">
+                            <i class="bi bi-currency-exchange"></i> Refund of <span th:text="'₹' + ${rr.refundAmount}">₹0</span> initiated.
+                        </p>
+                        <p th:if="${rr.status.name() == 'REFUND_COMPLETED'}" style="font-size: 13px; font-weight: 600; color: #2ecc71;">
+                            <i class="bi bi-patch-check"></i> Refund processed successfully.
+                        </p>
+                        <p th:if="${rr.status.name() == 'REPLACEMENT_PROCESSING'}" style="font-size: 13px; font-weight: 600; color: #3498db;">
+                            <i class="bi bi-box-seam"></i> Your replacement is being processed.
+                        </p>
+                        <p th:if="${rr.status.name() == 'REJECTED'}" style="font-size: 13px; font-weight: 600; color: #e74c3c;">
+                            <i class="bi bi-x-circle"></i> Return request rejected. Check chat for details.
+                        </p>
+                    </div>
+
+                    <!-- Regular Order Status Messages (Hidden if order is RETURNED) -->
+                    <div th:if="${order.status.name() != 'RETURNED'}">
+                        <span th:if="${order.status.name() == 'PENDING'}" style="font-size: 13px; font-weight: 600; color: #b08d4b;">Your order is currently being packed.</span>
+                        <span th:if="${order.status.name() == 'CONFIRMED'}" style="font-size: 13px; font-weight: 600; color: #b08d4b;">Order has been confirmed.</span>
+                        <span th:if="${order.status.name() == 'SHIPPED'}" style="font-size: 13px; font-weight: 600; color: #b08d4b;">Your order has been dispatched.</span>
+                        <span th:if="${order.status.name() == 'OUT_FOR_DELIVERY'}" style="font-size: 13px; font-weight: 600; color: #b08d4b;">Order is out for delivery today.</span>
+                        <span th:if="${order.status.name() == 'DELIVERED' and #lists.isEmpty(order.returnRequests)}" style="font-size: 13px; font-weight: 600; color: #2ecc71;">
+                            Delivered successfully on <span th:text="${#temporals.format(order.updatedAt, 'dd MMM yyyy')}">Date</span>.
+                        </span>
+                        <span th:if="${order.status.name() == 'CANCELLED'}" style="font-size: 13px; font-weight: 600; color: #e74c3c;">Your order has been cancelled.</span>
+                    </div>
+
+                    <!-- Final RETURNED Status Message -->
+                    <div th:if="${order.status.name() == 'RETURNED'}">
+                        <span style="font-size: 13px; font-weight: 600; color: #888;">
+                            <i class="bi bi-arrow-counterclockwise"></i> This transaction has been completed as a Return/Refund.
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div style="border-top: 1px solid #f2f2f2; padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <!-- Cancel Order (Pending/Confirmed) -->
+                        <div th:if="${order.status.name() == 'PENDING' or order.status.name() == 'CONFIRMED'}">
+                            <form th:action="@{'/order/cancel/' + ${order.orderId}}" method="post">
+                                <button type="submit" style="background: #fff; color: #e74c3c; border: 1.5px solid #e74c3c; border-radius: 30px; padding: 7px 18px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease;">
+                                    CANCEL ORDER
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Return / Replace (Delivered & in window) -->
+                        <div th:if="${order.status.name() == 'DELIVERED' and order.isReturnable()}">
+                            <!-- If return exists, show Track button -->
+                            <a th:if="${!#lists.isEmpty(order.returnRequests)}"
+                               th:href="@{'/return/chat/' + ${order.returnRequests[0].id}}"
+                               style="display:inline-flex;align-items:center;gap:8px;background:#8B1A1A;color:#fff;border-radius:30px;padding:7px 18px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all 0.3s ease;">
+                                <i class="bi bi-chat-dots"></i> TRACK RETURN
+                            </a>
+                            <!-- If NO return exists, show Request button -->
+                            <a th:if="${#lists.isEmpty(order.returnRequests)}"
+                               th:href="@{'/return/new/' + ${order.orderId}}"
+                               style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#1c1c1c;border:1.5px solid #1c1c1c;border-radius:30px;padding:7px 18px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all 0.3s ease;"
+                               onmouseover="this.style.background='#1c1c1c';this.style.color='#fff'"
+                               onmouseout="this.style.background='#fff';this.style.color='#1c1c1c'">
+                                <i class="bi bi-arrow-repeat"></i> RETURN / REPLACE
+                            </a>
+                        </div>
+
+                        <span th:if="${order.status.name() == 'SHIPPED' or order.status.name() == 'OUT_FOR_DELIVERY'}" style="font-size: 10px; font-style: italic; color: var(--bold-red); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Can't cancel after shipped</span>
+                        <span th:if="${order.status.name() == 'DELIVERED' and !order.isReturnable()}" style="font-size: 10px; font-style: italic; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Return Window closed</span>
+                    </div>
+
+                    <button type="button" class="details-toggle" th:onclick="'toggleDetails(this, \'' + ${order.orderId} + '\')'" style="background: none; border: none; color: #888; font-size: 20px; cursor: pointer; transition: transform 0.3s ease; padding: 5px;">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                </div>
+
+                <!-- Expandable Details Section -->
+                <div th:id="'details-' + ${order.orderId}" style="display: none; padding-top: 20px; border-top: 1px dashed #eee; margin-top: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px;">
+                        <div>
+                            <h4 style="font-size: 11px; text-transform: uppercase; color: #999; margin-bottom: 8px; letter-spacing: 1px;">Order <i>Insights</i></h4>
+                            <p style="font-size: 13px; color: #555; margin-bottom: 4px;">ID: <span th:text="${order.orderId}">123</span></p>
+                            <p style="font-size: 13px; color: #555; margin-bottom: 4px;">Ship to: <span th:text="${order.shippingAddress}">Address</span></p>
+                            <p style="font-size: 13px; color: #555; margin-bottom: 12px;">Payment: 
+                                <span th:if="${order.payment != null}">
+                                    <strong th:text="${order.payment.paymentMethod == 'ONLINE' ? 'Razorpay Online' : 'Cash on Delivery'}">COD</strong>
+                                    <span th:if="${order.payment.paymentMethod == 'ONLINE' and order.payment.razorpayPaymentId != null}"
+                                          th:text="'(Ref: ' + ${order.payment.razorpayPaymentId} + ')'" style="font-size:11px; color:#888;"></span>
+                                </span>
+                                <span th:if="${order.payment == null}"><strong>Cash on Delivery</strong></span>
+                            </p>
+                            
+                            <div style="background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #efefef;">
+                                <div th:each="item : ${order.orderItems}" style="display: flex; justify-content: space-between; margin-bottom: 8px; gap: 15px;">
+                                    <span style="font-size: 12px; color: #777;">
+                                        <span th:text="${item.product.name}">Product</span>
+                                        <span style="font-size: 11px; opacity: 0.7;" th:text="'x ' + ${item.quantity != null ? item.quantity : 1}">x 1</span>
+                                    </span>
+                                    <span style="font-size: 12px; color: #333; font-weight: 600; white-space: nowrap;" 
+                                          th:text="'₹' + ${#numbers.formatDecimal((item.price != null ? item.price : 0) * (item.quantity != null ? item.quantity : 1), 0, 'COMMA', 2, 'POINT')}">₹0.00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 10px;">
+                                    <span style="font-size: 12px; color: #777;">Shipping Cost</span>
+                                    <span style="font-size: 12px; color: #333; font-weight: 600;" th:text="'₹' + ${#numbers.formatDecimal(order.shippingFees != null ? order.shippingFees : 50.00, 0, 'COMMA', 2, 'POINT')}">₹50.00</span>
+                                </div>
+                                <div th:if="${order.discountAmount != null and order.discountAmount > 0}" 
+                                     style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #2ecc71;">
+                                    <span style="font-size: 12px; font-weight: 600;">Loyalty Points Discount</span>
+                                    <span style="font-size: 12px; font-weight: 700;" th:text="'-₹' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 2, 'POINT')}">-₹0.00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 10px;">
+                                    <span style="font-size: 12px; color: #1c1c1c; font-weight: 700;">Grand Total</span>
+                                    <span style="font-size: 13px; color: var(--bold-red); font-weight: 800;" th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">₹1,999.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <h4 style="font-size: 11px; text-transform: uppercase; color: #999; margin-bottom: 12px; letter-spacing: 1px;">Assistance & Documents</h4>
+                            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+                                <a href="javascript:void(0)" th:onclick="'openInvoicePopup(\'/order/invoice/download/' + ${order.orderId} + '\')'" class="btn-invoice">
+                                    <i class="bi bi-file-earmark-pdf"></i> DOWNLOAD INVOICE
+                                </a>
+                                <a href="mailto:support@trulybare.com" style="display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: #b08d4b; text-decoration: none; font-weight: 600;">
+                                    <i class="bi bi-headset"></i> CONTACT SUPPORT
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/home.js}"></script>
+    <script>
+        function toggleDetails(btn, orderId) {
+            const content = document.getElementById('details-' + orderId);
+            const icon = btn.querySelector('i');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                btn.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.display = 'none';
+                btn.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function filterOrders(group, chip) {
+            const cards = document.querySelectorAll('.order-tracker-card');
+            const chips = document.querySelectorAll('.filter-chip');
+            
+            // Toggle active chip
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+
+            cards.forEach(card => {
+                const cardGroup = card.getAttribute('data-group');
+                const cardStatus = card.getAttribute('data-status');
+                
+                if (group === 'ALL') {
+                    card.style.display = 'block';
+                } else if (group === 'ORDERED' && (cardStatus === 'PENDING' || cardStatus === 'CONFIRMED' || cardStatus === 'SHIPPED')) {
+                    card.style.display = 'block';
+                } else if (group === 'OUT_FOR_DELIVERY' && (cardStatus === 'SHIPPED' || cardStatus === 'OUT_FOR_DELIVERY')) {
+                    card.style.display = 'block';
+                } else if (cardGroup === group || cardStatus === group) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function openInvoicePopup(url) {
+            const width = 850;
+            const height = 900;
+            const left = (screen.width / 2) - (width / 2);
+            const top = (screen.height / 2) - (height / 2);
+            
+            window.open(url, 'InvoicePopup', 
+                `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`);
+        }
+    </script>
+
+    <th:block th:replace="~{fragments :: main_footer}"></th:block>
+
+</body>
+</html>
+

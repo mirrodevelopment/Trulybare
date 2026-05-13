@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Dashboard')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('dashboard')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title">📊 Dashboard</span>
+        <div class="admin-badge">
+            <img th:src="@{/assets/images/logo.png}" class="admin-avatar" alt="Admin">
+            <span>Admin</span>
+        </div>
+    </div>
+
+    <div class="content-area">
+
+        <!-- Flash Messages -->
+        <div class="flash-success" th:if="${success}">✅ <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}">  ❌ <span th:text="${error}"></span></div>
+
+        <!-- Today Highlight -->
+        <div class="stats-grid">
+            <a th:href="@{/admin/sales}" class="stat-card accent" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">💰</div>
+                <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(stats.todayRevenue, 0, 'COMMA', 0, 'POINT')}">0</span></div>
+                <div class="stat-label">Revenue Today</div>
+            </a>
+            <a th:href="@{/admin/orders}" class="stat-card success" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">🛒</div>
+                <div class="stat-value" th:text="${stats.todayOrders}">0</div>
+                <div class="stat-label">Orders Today</div>
+            </a>
+            <a th:href="@{/admin/orders(status='PENDING')}" class="stat-card warn" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" th:text="${stats.pendingOrders}">0</div>
+                <div class="stat-label">Pending Orders</div>
+            </a>
+            <a th:href="@{/admin/inventory}" class="stat-card danger" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">🏪</div>
+                <div class="stat-value" th:text="${stats.lowStockCount}">0</div>
+                <div class="stat-label">Low Stock Items</div>
+            </a>
+            <a th:href="@{/admin/products}" class="stat-card" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">📦</div>
+                <div class="stat-value" th:text="${stats.totalProducts}">0</div>
+                <div class="stat-label">Total Products</div>
+            </a>
+            <a th:href="@{/admin/users}" class="stat-card" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" th:text="${stats.totalUsers}">0</div>
+                <div class="stat-label">Registered Users</div>
+            </a>
+            <a th:href="@{/admin/reviews(status='PENDING')}" class="stat-card warn" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value" th:text="${stats.pendingReviews}">0</div>
+                <div class="stat-label">Reviews Waiting</div>
+            </a>
+            <a th:href="@{/admin/returns(status='PENDING')}" class="stat-card warn" style="text-decoration:none; cursor:pointer;">
+                <div class="stat-icon">🔁</div>
+                <div class="stat-value" th:text="${stats.pendingReturns}">0</div>
+                <div class="stat-label">Return Requests</div>
+            </a>
+        </div>
+
+        <!-- Quick Action Cards -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:16px;">
+            <div class="card">
+                <div class="card-body" style="text-align:center; padding:24px 20px;">
+                    <div style="font-size:30px; margin-bottom:12px;">📦</div>
+                    <p style="font-weight:600; margin-bottom:8px;">Add New Product</p>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">List a new item in the store</p>
+                    <a th:href="@{/admin/products/new}" class="btn btn-primary" style="width:100%; justify-content:center;">➕ Add Product</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body" style="text-align:center; padding:24px 20px;">
+                    <div style="font-size:30px; margin-bottom:12px;">⭐</div>
+                    <p style="font-weight:600; margin-bottom:8px;">Review Approvals</p>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                        <span th:text="${stats.pendingReviews}">0</span> review(s) waiting for your decision
+                    </p>
+                    <a th:href="@{/admin/reviews(status='PENDING')}" class="btn btn-warning" style="width:100%; justify-content:center;">View Pending</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body" style="text-align:center; padding:24px 20px;">
+                    <div style="font-size:30px; margin-bottom:12px;">🔁</div>
+                    <p style="font-weight:600; margin-bottom:8px;">Return Requests</p>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                        <span th:text="${stats.pendingReturns}">0</span> return(s) need attention
+                    </p>
+                    <a th:href="@{/admin/returns(status='PENDING')}" class="btn btn-danger" style="width:100%; justify-content:center;">Review Returns</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body" style="text-align:center; padding:24px 20px;">
+                    <div style="font-size:30px; margin-bottom:12px;">📈</div>
+                    <p style="font-weight:600; margin-bottom:8px;">Today's Sales</p>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">See how products performed today</p>
+                    <a th:href="@{/admin/sales}" class="btn btn-success" style="width:100%; justify-content:center;">View Sales</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Access Information (User Request) -->
+        <div class="card" style="margin-top:24px; border: 1px solid var(--garnet-light);">
+            <div class="card-header" style="background: rgba(139, 0, 0, 0.05);">
+                <h2 style="color:var(--garnet);"><i class="bi bi-shield-lock"></i> Admin Access Information</h2>
+            </div>
+            <div class="card-body">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+                    <div>
+                        <p style="font-weight:600; font-size:13px; margin-bottom:8px; color:var(--text-medium);">Primary Admin Credentials</p>
+                        <div style="background:var(--bg-light); border-radius:8px; padding:12px; font-family:monospace; font-size:12px; border:1px solid var(--border);">
+                            <div style="margin-bottom:4px;"><span style="color:var(--text-muted);">Login URL:</span> <a href="/secure-admin-login" style="color:var(--garnet); text-decoration:none; font-weight:600;">/secure-admin-login</a></div>
+                            <div style="margin-bottom:4px;"><span style="color:var(--text-muted);">Admin ID:</span> Trulybare@admin</div>
+                            <div><span style="color:var(--text-muted);">Password:</span> truly@bare123</div>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="font-weight:600; font-size:13px; margin-bottom:8px; color:var(--text-medium);">Alternative Account</p>
+                        <div style="background:var(--bg-light); border-radius:8px; padding:12px; font-family:monospace; font-size:12px; border:1px solid var(--border);">
+                            <div style="margin-bottom:4px;"><span style="color:var(--text-muted);">Email:</span> admin@trulybare.com</div>
+                            <div><span style="color:var(--text-muted);">Password:</span> Admin@123</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Customers -->
+        <div class="card" style="margin-top:24px;">
+            <div class="card-header">
+                <h2>Recent Customers</h2>
+                <a th:href="@{/admin/users}" style="font-size:12px; color:var(--garnet); font-weight:600; text-decoration:none;">View All →</a>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Orders</th>
+                            <th>Joined</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${recentUsers}">
+                            <td>
+                                <div class="customer-cell">
+                                    <div class="customer-avatar" th:text="${#strings.substring(u.fullName, 0, 1)}">U</div>
+                                    <div class="customer-info">
+                                        <div class="customer-name" th:text="${u.fullName}">User Name</div>
+                                        <div class="customer-email" th:text="${u.email}">user@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-status gold" th:text="${u.customerStatus != null ? u.customerStatus : 'Silver'}">Silver</span>
+                            </td>
+                            <td th:text="${u.totalOrders != null ? u.totalOrders : 0}">0</td>
+                            <td class="muted" th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'dd MMM yyyy') : '—'}">01 Jan 2024</td>
+                            <td>
+                                <a th:href="@{/admin/users/edit/{id}(id=${u.userId})}" style="color:var(--text-muted);"><i class="bi bi-pencil"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /content-area -->
+</div><!-- /main-content -->
+</body>
+</html>

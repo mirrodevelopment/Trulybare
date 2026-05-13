@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Return / Replace | Truly Bare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <style>
+        :root {
+            --cream: #FAF8F5;
+            --gold: #C9A84C;
+            --dark: #1c1c1c;
+            --muted: #9C8875;
+            --red: #8B1A1A;
+            --border: rgba(201,168,76,0.2);
+            --card-radius: 24px;
+        }
+
+        body { background: var(--cream); }
+
+        .return-container {
+            max-width: 680px;
+            margin: 40px auto 80px;
+            padding: 0 20px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 28px;
+            transition: gap 0.3s ease;
+        }
+        .back-link:hover { gap: 14px; }
+
+        .page-header { margin-bottom: 32px; }
+        .page-title {
+            font-family: var(--font-display);
+            font-size: 34px;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+        .page-sub { font-size: 14px; color: var(--muted); font-style: italic; }
+
+        .order-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        }
+        .order-badge .icon { font-size: 20px; }
+        .order-badge .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .order-badge .value { font-size: 14px; font-weight: 700; color: var(--dark); }
+
+        .form-card {
+            background: #fff;
+            border-radius: var(--card-radius);
+            padding: 36px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .section-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted);
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        /* Reason chips */
+        .reason-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+        .reason-chip {
+            position: relative;
+            cursor: pointer;
+        }
+        .reason-chip input[type="radio"] { display: none; }
+        .reason-chip label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .reason-chip input[type="radio"]:checked + label {
+            border-color: var(--red);
+            background: var(--red);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(139,26,26,0.22);
+        }
+        .reason-chip label:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        /* Return type toggle */
+        .type-toggle { display: flex; gap: 14px; margin-bottom: 28px; }
+        .type-option { flex: 1; }
+        .type-option input[type="radio"] { display: none; }
+        .type-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 18px 20px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+        .type-option label .type-icon { font-size: 26px; }
+        .type-option label .type-name { font-size: 13px; font-weight: 700; color: var(--dark); }
+        .type-option label .type-desc { font-size: 11px; color: var(--muted); }
+        .type-option input[type="radio"]:checked + label {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.06);
+            box-shadow: 0 4px 16px rgba(201,168,76,0.18);
+        }
+
+        /* Textarea */
+        .desc-area {
+            width: 100%;
+            min-height: 100px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--dark);
+            resize: vertical;
+            transition: border-color 0.25s;
+            box-sizing: border-box;
+            margin-bottom: 28px;
+            background: #fafaf9;
+        }
+        .desc-area:focus { border-color: var(--gold); outline: none; background: #fff; }
+
+        /* Image Upload */
+        .image-upload-zone {
+            border: 2px dashed rgba(201,168,76,0.35);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+            background: #fafaf9;
+        }
+        .image-upload-zone:hover, .image-upload-zone.drag-over {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.05);
+        }
+        .upload-icon { font-size: 32px; margin-bottom: 8px; color: var(--gold); }
+        .upload-title { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+        .upload-sub { font-size: 12px; color: var(--muted); }
+        #imageInput { display: none; }
+
+        .preview-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+        .preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1.5px solid var(--border);
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-remove {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 20px;
+            height: 20px;
+            background: rgba(139,26,26,0.85);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-submit:hover {
+            background: #6b1212;
+            box-shadow: 0 8px 24px rgba(139,26,26,0.3);
+            transform: translateY(-2px);
+        }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .form-note {
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 14px;
+        }
+
+        .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+        @media (max-width: 600px) {
+            .form-card { padding: 22px 18px; }
+            .type-toggle { flex-direction: column; }
+            .page-title { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <div class="return-container">
+        <a th:href="@{/order-history}" class="back-link">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+
+        <div class="page-header">
+            <h1 class="page-title">Return <i>or</i> Replace</h1>
+            <p class="page-sub">Let us know what went wrong — we'll make it right.</p>
+        </div>
+
+        <!-- Order Badge -->
+        <div class="order-badge">
+            <div class="icon">🧾</div>
+            <div>
+                <div class="label">Order</div>
+                <div class="value" th:text="${order.orderNumber}">TB-ORD-0000</div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:0 6px;"></div>
+            <div>
+                <div class="label">Product</div>
+                <div class="value" th:text="${order.orderItems != null and !order.orderItems.isEmpty() ? order.orderItems[0].product.name : 'Your Order'}">Product Name</div>
+            </div>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${errorMessage}" style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px 16px;color:#991b1b;font-size:13px;margin-bottom:20px;">
+            ❌ <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- Return Form -->
+        <div class="form-card">
+            <form th:action="@{/return/submit}" method="post" enctype="multipart/form-data" id="returnForm">
+                <input type="hidden" name="orderId" th:value="${order.orderId}"/>
+
+                <!-- REASON CHIPS -->
+                <div class="section-label">Why are you returning?</div>
+                <div class="reason-chips">
+                    <div class="reason-chip" th:each="r : ${reasons}">
+                        <input type="radio" name="reason" th:id="'reason_' + ${r}" th:value="${r}" required>
+                        <label th:for="'reason_' + ${r}">
+                            <span th:text="${r == 'Damaged' ? '💔' : r == 'Wrong Item' ? '📦' : r == 'Size Issue' ? '📏' : r == 'Quality Issue' ? '⚠️' : '🔧'}"></span>
+                            <span th:text="${r}">Reason</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- RETURN TYPE -->
+                <div class="section-label">What would you prefer?</div>
+                <div class="type-toggle">
+                    <div class="type-option">
+                        <input type="radio" name="returnType" id="typeReturn" value="RETURN" checked required>
+                        <label for="typeReturn">
+                            <span class="type-icon">💰</span>
+                            <span class="type-name">Return &amp; Refund</span>
+                            <span class="type-desc">Get your money back</span>
+                        </label>
+                    </div>
+                    <div class="type-option">
+                        <input type="radio" name="returnType" id="typeReplace" value="REPLACEMENT">
+                        <label for="typeReplace">
+                            <span class="type-icon">🔄</span>
+                            <span class="type-name">Replacement</span>
+                            <span class="type-desc">Get a new item</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- DESCRIPTION -->
+                <div class="section-label">Tell us more (optional)</div>
+                <textarea class="desc-area" name="description"
+                          placeholder="Describe the issue in detail — this helps us resolve it faster…"></textarea>
+
+                <!-- IMAGE UPLOAD -->
+                <div class="section-label">Upload Proof Images (1–5 photos)</div>
+                <div class="image-upload-zone" id="uploadZone" onclick="document.getElementById('imageInput').click()">
+                    <div class="upload-icon">📸</div>
+                    <div class="upload-title">Drag &amp; drop or click to upload</div>
+                    <div class="upload-sub">JPG / PNG • Max 5MB each • Up to 5 images</div>
+                </div>
+                <input type="file" id="imageInput" name="images" multiple accept="image/jpeg,image/png" onchange="handleImageUpload(event)">
+
+                <div class="preview-grid" id="previewGrid"></div>
+
+                <!-- SUBMIT -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="bi bi-send-fill"></i> Submit Return Request
+                </button>
+                <p class="form-note">By submitting, a support chat will open for real-time updates.</p>
+            </form>
+        </div>
+    </div>
+
+    <script th:src="@{/js/home.js}"></script>
+    <script>
+        let selectedFiles = [];
+
+        function handleImageUpload(event) {
+            const files = Array.from(event.target.files);
+            if (selectedFiles.length + files.length > 5) {
+                alert('Maximum 5 images allowed.');
+                return;
+            }
+            files.forEach(file => {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`${file.name} exceeds 5MB limit.`);
+                    return;
+                }
+                selectedFiles.push(file);
+                renderPreview(file);
+            });
+            updateFileInput();
+        }
+
+        function renderPreview(file) {
+            const grid = document.getElementById('previewGrid');
+            const reader = new FileReader();
+            reader.onload = e => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                const idx = selectedFiles.length - 1;
+                item.setAttribute('data-index', idx);
+                item.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button type="button" class="preview-remove" onclick="removeImage(${idx})">×</button>`;
+                grid.appendChild(item);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(index) {
+            selectedFiles.splice(index, 1);
+            const grid = document.getElementById('previewGrid');
+            grid.innerHTML = '';
+            // Re-render all
+            selectedFiles.forEach((f, i) => renderPreviewFromFile(f, i));
+            updateFileInput();
+        }
+
+        function renderPreviewFromFile(file, idx) {
+            const grid = document.getElementById('previewGrid');
+            const reader = new FileReader();
+            reader.onload = e => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button type="button" class="preview-remove" onclick="removeImage(${idx})">×</button>`;
+                grid.appendChild(item);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateFileInput() {
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            document.getElementById('imageInput').files = dt.files;
+        }
+
+        // Drag & drop
+        const zone = document.getElementById('uploadZone');
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            handleImageUpload({ target: { files: e.dataTransfer.files } });
+        });
+
+        // Submit guard
+        document.getElementById('returnForm').addEventListener('submit', () => {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting…';
+        });
+    </script>
+
+    <th:block th:replace="~{fragments :: main_footer}"></th:block>
+
+</body>
+</html>
+

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Truly Bare | My Account</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+
+</head>
+
+<body>
+
+    <!-- Main Site Header (logo + nav + cart) -->
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <!-- Mobile Menu Trigger -->
+    <div class="dash-mobile-trigger" onclick="toggleSidebar()" style="display: none;">
+        <i class="bi bi-grid-fill"></i>
+        <span>Dashboard Hub</span>
+    </div>
+
+    <div class="profile-hero" th:classappend="'hero-tier-' + ${memberStatus}">
+        <div class="ph-overline">Truly Bare &middot; Account</div>
+        <h1 class="ph-title elegant-user-name">
+            <span class="gold-cap" th:text="${#strings.substring(user.fullName,0,1)}">S</span><span
+                th:text="${#strings.substring(user.fullName,1)}">UserName</span>
+        </h1>
+        <!-- Membership Tier Badge in Hero -->
+        <div style="display:flex; justify-content:center; margin-top:10px;">
+            <div class="hero-status-pill">
+                <a th:href="@{/loyalty-program}" class="tier-badge-link" title="View Membership Benefits">
+                    <span class="tier-badge" th:classappend="${memberStatus}">
+                        <i class="tier-icon bi"
+                            th:classappend="${memberStatus == 'Bronze' ? 'bi-circle-half' : memberStatus == 'Silver' ? 'bi-star' : memberStatus == 'Gold' ? 'bi-star-fill' : memberStatus == 'Platinum' ? 'bi-gem' : memberStatus == 'Diamond' ? 'bi-diamond-fill' : 'bi-crown-fill'}"></i>
+                        <span th:text="${memberStatus} + ' MEMBER'">BRONZE MEMBER</span>
+                        <i class="bi bi-arrow-right-short"
+                            style="margin-left: 5px; font-size: 1.2em; opacity: 0.8;"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <div class="ph-subtitle" style="margin-top:18px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <span
+                    style="color: var(--gold); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                    <i class="bi bi-gift-fill"></i> <span
+                        th:text="${user.loyaltyPoints != null ? user.loyaltyPoints : 0}">0</span> Points (₹<span
+                        th:text="${user.loyaltyPoints != null ? user.loyaltyPoints : 0}">0</span>)
+                </span>
+                <span class="loyalty-tag">
+                    Loyal Member since
+                    <span th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'MMM ') : 'Apr '}">Apr
+                    </span><span class="red-year"
+                        th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy') : '2024'}">2024</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="dash-sidebar" id="dashSidebar">
+            <!-- App Profile Card -->
+            <div class="app-sidebar-card" th:classappend="${memberStatus}">
+                <div class="app-profile-top">
+                    <div class="app-avatar-box" th:text="${#strings.substring(user.fullName,0,1)}">S</div>
+                    <div class="app-user-info">
+                        <h3 class="app-user-name" th:text="${user.fullName}">Sivasurya S</h3>
+                        <span class="app-user-since">
+                            Loyal Member since<br>
+                            <span class="app-since-date"
+                                th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'MMM yyyy') : 'APR 2026'}">APR
+                                2026</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="app-divider"></div>
+                <div class="app-stats-row">
+                    <div class="app-stat-col">
+                        <span class="app-stat-label">LOYALTY POINTS</span>
+                        <div class="app-stat-value">
+                            <i class="bi bi-gift-fill app-gift-icon"></i>
+                            <div class="app-points-wrap">
+                                <span class="app-points-number"
+                                    th:text="${user.loyaltyPoints != null ? user.loyaltyPoints : 0}">0</span>
+                                <span class="app-points-text">Points</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="app-stat-col text-right">
+                        <span class="app-stat-label">STATUS</span>
+                        <div class="app-status-value">
+                            <strong class="app-tier-text" th:classappend="${memberStatus}"
+                                th:text="${memberStatus}">Bronze</strong>
+                            <small class="app-next-tier" th:if="${nextTierOrders != -1}">
+                                <span class="app-next-num" th:text="${nextTierOrders - orderCount}">5</span> MORE
+                                TO <span class="app-next-name"
+                                    th:text="${nextTierOrders == 10 ? 'SILVER' : nextTierOrders == 25 ? 'GOLD' : nextTierOrders == 50 ? 'PLATINUM' : nextTierOrders == 100 ? 'DIAMOND' : 'ELITE'}">SILVER</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="b-nav">
+                <a href="#personal-details" class="b-nav-link active" onclick="setActiveLink(this); closeSidebar();"><i
+                        class="bi bi-person"></i> Login & Security</a>
+                <a href="#delivery-details" class="b-nav-link" onclick="setActiveLink(this); closeSidebar();"><i
+                        class="bi bi-geo-alt"></i> Your Addresses</a>
+                <a th:href="@{/order-history}" class="b-nav-link"><i class="bi bi-box-seam"></i> Order Archives</a>
+                <a href="#my-reflections" class="b-nav-link" onclick="setActiveLink(this); closeSidebar();"><i
+                        class="bi bi-chat-heart"></i> My Reflections</a>
+                <a th:href="@{/cart}" class="b-nav-link"><i class="bi bi-bag"></i> Shopping Cart</a>
+                <a th:href="@{/logout}" class="b-nav-link" style="color: #c0392b;"><i class="bi bi-box-arrow-right"></i>
+                    Sign Out</a>
+            </nav>
+
+            <!-- Mobile-only Sign Out button (always visible at bottom of sidebar) -->
+            <a th:href="@{/logout}" class="mobile-signout-btn">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+            </a>
+
+        </aside>
+
+        <main class="dash-content" style="background: transparent; padding: 0;">
+
+            <div th:if="${successMessage}" class="alert-toast">
+                <i class="bi bi-check-circle-fill"></i>
+                <span th:text="${successMessage}">Changes saved.</span>
+            </div>
+
+            <div th:if="${param.error}" class="alert-toast"
+                style="background: #FFEBEE; color: #D32F2F; box-shadow: 0 4px 12px rgba(211,47,47,0.1);">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span th:text="${param.error}">An error occurred.</span>
+            </div>
+
+            <form class="profile-form" th:action="@{/profile/update}" method="post">
+                <div class="dash-grid" style="grid-template-columns: 1fr;">
+
+                <!-- PERSONAL DETAILS SECTION -->
+                <div class="b-card" id="personal-details">
+                    <div class="b-card-header">
+                        <div class="b-card-title-wrap">
+                            <span class="overline">Personal Details</span>
+                            <h2>Login & <i>Security</i></h2>
+                        </div>
+                        <button type="button" class="b-edit-btn edit-toggle-btn" onclick="enableEdit()">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                    </div>
+
+                    <div class="profile-content">
+                        <!-- Top Row: Name, Email, Phone -->
+                        <div class="b-input-grid">
+                            <div class="b-input-group">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" id="fullName" name="fullName" class="botanical-input profile-input"
+                                    th:value="${user.fullName}" required readonly>
+                            </div>
+                            <div class="b-input-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" class="botanical-input" th:value="${user.email}"
+                                    disabled>
+                            </div>
+                            <div class="b-input-group">
+                                <label for="phone">Mobile Number</label>
+                                <input type="text" id="phone" name="phone" class="botanical-input profile-input"
+                                    th:value="${user.phone}" required readonly>
+                            </div>
+                        </div>
+
+                        <!-- Second Row: Alternate Mobile (Simulated), DOB, Gender -->
+                        <div class="b-input-grid">
+                            <div class="b-input-group">
+                                <label for="altMobile">Alternate Mobile</label>
+                                <input type="text" id="altMobile" class="botanical-input profile-input"
+                                    placeholder="+91" readonly>
+                            </div>
+                            <div class="b-input-group">
+                                <label for="dateOfBirth">Date of Birth</label>
+                                <input type="date" id="dateOfBirth" name="dateOfBirth"
+                                    class="botanical-input profile-input" th:value="${user.dateOfBirth}" readonly>
+                            </div>
+                            <div class="b-input-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender" name="gender" class="botanical-input profile-input" disabled
+                                    style="appearance: none;">
+                                    <option value="" th:selected="${user.gender == null}">Select</option>
+                                    <option value="MALE" th:selected="${user.gender?.name() == 'MALE'}">Male</option>
+                                    <option value="FEMALE" th:selected="${user.gender?.name() == 'FEMALE'}">Female
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- DELIVERY DETAILS SECTION -->
+                <div class="b-card" id="delivery-details">
+                    <div class="b-card-header">
+                        <div class="b-card-title-wrap">
+                            <span class="overline">Delivery Details</span>
+                            <h2>Your <i>Addresses</i></h2>
+                        </div>
+                        <button type="button" class="b-edit-btn edit-toggle-btn" onclick="enableEdit()">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                    </div>
+
+                    <div class="profile-content">
+                        <div class="b-input-grid" style="grid-template-columns: 1fr;">
+                            <div class="b-input-group">
+                                <label for="addressLine1">Address Line 1</label>
+                                <input type="text" id="addressLine1" name="addressLine1"
+                                    class="botanical-input profile-input"
+                                    th:value="${address != null ? address.addressLine1 : ''}" readonly>
+                            </div>
+                        </div>
+
+                        <div class="b-input-grid">
+                            <div class="b-input-group">
+                                <label for="city">City</label>
+                                <input type="text" id="city" name="city" class="botanical-input profile-input"
+                                    th:value="${address != null ? address.city : ''}" readonly>
+                            </div>
+                            <div class="b-input-group">
+                                <label for="state">State</label>
+                                <input type="text" id="state" name="state" class="botanical-input profile-input"
+                                    th:value="${address != null ? address.state : ''}" readonly>
+                            </div>
+                            <div class="b-input-group">
+                                <label for="pincode">Pincode</label>
+                                <input type="text" id="pincode" name="pincode" class="botanical-input profile-input"
+                                    th:value="${address != null ? address.pincode : ''}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-save-wrap" id="saveBtnWrap"
+                    style="display: none; text-align: left; margin-top: 30px; margin-bottom: 30px;">
+                    <button type="submit" class="btn-save"
+                        style="background: var(--text-dark); color: #fff;">Save Changes</button>
+                    <button type="button" class="b-edit-btn" style="border: none; margin-left: 10px;"
+                        onclick="disableEdit()">Cancel</button>
+                </div>
+            </form>
+            
+            <div class="dash-grid" style="grid-template-columns: 1fr;">
+                <div class="b-card" id="order-history">
+                    <div class="b-card-header">
+                        <div class="b-card-title-wrap">
+                            <span class="overline">Order History</span>
+                            <h2>Your <i>Orders</i></h2>
+                        </div>
+                    </div>
+
+
+
+
+                    <!-- Empty state -->
+                    <div th:if="${orders == null or orders.isEmpty()}" class="empty-state">
+                        <i class="bi bi-bag-x"
+                            style="font-size: 36px; color: var(--border-gold); display:block; margin-bottom:14px;"></i>
+                        <p>No orders placed yet.</p>
+                        <a th:href="@{/products}" class="empty-cta">Start Shopping</a>
+                    </div>
+
+                    <!-- Order cards -->
+                    <div th:if="${orders != null and !orders.isEmpty()}">
+                        <div id="orderListContainer">
+                            <div th:each="order, stat : ${orders}" class="order-tracker-card"
+                                th:classappend="${stat.index >= 1 ? 'extra-order' : ''}"
+                                th:style="${stat.index >= 1 ? 'display: none;' : ''}">
+                                <div class="order-tracker-header">
+                                    <div>
+                                        <div class="order-id">Order <span th:text="${order.orderNumber}">#TB000</span>
+                                        </div>
+                                        <div class="order-date"
+                                            th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy')}">Date</div>
+                                    </div>
+                                    <div style="font-weight: 600; font-size: 16px; color: var(--text-dark);"
+                                        th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 2, 'POINT')}">
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                                    <div th:each="item : ${order.orderItems}" class="order-item-chip">
+                                        <img
+                                            th:src="@{${item.product.imageUrl != null ? item.product.imageUrl : '/assets/images/placeholder.png'}}"
+                                            onerror="this.onerror=null; this.src='/assets/images/placeholder.png';">
+                                        <span th:text="${item.product.name}">Product Name</span>
+                                        <a th:href="@{'/review/write/' + ${item.product.productId} + '?orderId=' + ${order.orderId}}"
+                                            class="review-chip-link">Review</a>
+                                    </div>
+                                </div>
+
+                                <div class="order-tracker-container">
+                                    <!-- Track Wrapper to constrain progress -->
+                                    <div
+                                        style="position: absolute; top: 11px; left: 35px; right: 35px; height: 2px; z-index: 2;">
+                                        <div class="tracker-line"
+                                            th:style="${order.status.name() == 'PENDING'   ? 'width: 33.33%;' : 
+                                                   (order.status.name() == 'SHIPPED'   ? 'width: 66.66%;' : 
+                                                   (order.status.name() == 'DELIVERED' ? 'width: 100%;' : 'width: 0%; display: none;'))}">
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        th:class="${order.status.name() != 'CANCELLED'} ? 'tracker-step completed' : 'tracker-step'">
+                                        <div class="tracker-node"></div>
+                                        <div class="tracker-label">Placed</div>
+                                    </div>
+
+                                    <div
+                                        th:class="${order.status.name() == 'SHIPPED' or order.status.name() == 'DELIVERED'} ? 'tracker-step completed' : 
+                                                (${order.status.name() == 'PENDING'} ? 'tracker-step active' : 'tracker-step')">
+                                        <div class="tracker-node"></div>
+                                        <div class="tracker-label">Packed</div>
+                                    </div>
+
+                                    <div
+                                        th:class="${order.status.name() == 'DELIVERED'} ? 'tracker-step completed' : 
+                                                (${order.status.name() == 'SHIPPED'} ? 'tracker-step active' : 'tracker-step')">
+                                        <div class="tracker-node"></div>
+                                        <div class="tracker-label">Shipped</div>
+                                    </div>
+
+                                    <div
+                                        th:class="${order.status.name() == 'DELIVERED'} ? 'tracker-step completed' : 'tracker-step'">
+                                        <div class="tracker-node"></div>
+                                        <div class="tracker-label">Delivered</div>
+                                    </div>
+                                </div>
+
+                                <div class="order-status-msg">
+                                    <span th:if="${order.status.name() == 'PENDING'}" class="status-msg pending">Your
+                                        order is currently being packed.</span>
+                                    <span th:if="${order.status.name() == 'SHIPPED'}" class="status-msg shipped">Your
+                                        order has been dispatched.</span>
+                                    <span th:if="${order.status.name() == 'DELIVERED'}"
+                                        class="status-msg delivered">Item delivered successfully.</span>
+                                    <span th:if="${order.status.name() == 'CANCELLED'}" class="status-msg cancelled">
+                                        Order was cancelled.<br />
+                                        <small th:if="${order.cancelReason != null}"
+                                            th:text="'Reason: ' + ${order.cancelReason}"
+                                            style="color: #7f8c8d;"></small>
+                                    </span>
+                                    <span th:if="${order.status.name() == 'RETURNED'}" class="status-msg cancelled">
+                                        Order was returned.<br />
+                                        <small th:if="${order.returnReason != null}"
+                                            th:text="'Reason: ' + ${order.returnReason}"
+                                            style="color: #7f8c8d;"></small>
+                                    </span>
+                                </div>
+                                <div class="order-actions"
+                                    style="margin-top: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                    <form
+                                        th:if="${order.status.name() == 'PENDING' or order.status.name() == 'CONFIRMED'}"
+                                        th:action="@{'/order/cancel/' + ${order.orderId}}" method="post">
+                                        <button type="button" class="b-edit-btn"
+                                            style="color:#D32F2F; border-color:#D32F2F;"
+                                            onclick="this.nextElementSibling.style.display='flex'; this.style.display='none';">Cancel
+                                            Order</button>
+                                        <div style="display:none; gap:10px; align-items:center;">
+                                            <input type="text" name="cancelReason" placeholder="Reason for cancellation"
+                                                required class="botanical-input"
+                                                style="padding: 6px 12px; min-width: 250px; font-size: 13px;" />
+                                            <button type="submit" class="b-edit-btn"
+                                                style="color:#FFF; background:#D32F2F; border-color:#D32F2F;">Confirm
+                                                Cancel</button>
+                                            <button type="button" class="b-edit-btn" style="border:none;"
+                                                onclick="this.parentElement.style.display='none'; this.parentElement.previousElementSibling.style.display='inline-flex';">Abort</button>
+                                        </div>
+                                    </form>
+                                    <span th:if="${order.status.name() == 'SHIPPED'}"
+                                        style="font-size: 13px; color: #888; font-style: italic;">Shipped orders cannot
+                                        be cancelled.</span>
+                                    <!-- Return / Replace (Delivered & in window) -->
+                                    <div th:if="${order.status.name() == 'DELIVERED' and order.isReturnable()}">
+                                        <!-- If return exists, show Track button -->
+                                        <a th:if="${!#lists.isEmpty(order.returnRequests)}"
+                                           th:href="@{'/return/chat/' + ${order.returnRequests[0].id}}"
+                                           class="b-edit-btn"
+                                           style="display:inline-flex;align-items:center;gap:8px;background:#8B1A1A;color:#fff;border-radius:30px;padding:7px 18px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all 0.3s ease;">
+                                            <i class="bi bi-chat-dots"></i> Track Return
+                                        </a>
+                                        <!-- If NO return exists, show Request button -->
+                                        <a th:if="${#lists.isEmpty(order.returnRequests)}"
+                                           th:href="@{'/return/new/' + ${order.orderId}}"
+                                           class="b-edit-btn"
+                                           style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#1c1c1c;border:1.5px solid #1c1c1c;border-radius:30px;padding:7px 18px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all 0.3s ease;">
+                                            <i class="bi bi-arrow-repeat"></i> Return / Replace
+                                        </a>
+                                    </div>
+                                    <span th:if="${order.status.name() == 'DELIVERED' and !order.isReturnable()}"
+                                        style="font-size: 13px; color: #888; font-style: italic;">Return window closed (7 days past delivery).</span>
+                                    <form th:if="${order.status.name() == 'CANCELLED' and order.isReorderable()}"
+                                        th:action="@{'/order/reorder/' + ${order.orderId}}" method="post">
+                                        <button type="submit" class="b-edit-btn"
+                                            style="color:#2E7D32; border-color:#2E7D32;">Undo Cancel / Reorder</button>
+                                    </form>
+                                    <span th:if="${order.status.name() == 'CANCELLED' and !order.isReorderable()}"
+                                        style="font-size: 13px; color: #888; font-style: italic;">Payment returned
+                                        (cannot be reordered).</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${orders.size() > 1}" style="text-align: center; margin-top: 20px;">
+                            <a th:href="@{/order-history}" class="b-edit-btn"
+                                style="text-decoration: none; display: inline-block;">View More Orders</a>
+                        </div>
+                    </div>
+                </div> <!-- END #order-history -->
+
+                <!-- MY REFLECTIONS SECTION — standalone card -->
+                <div class="b-card" id="my-reflections">
+                    <div class="b-card-header">
+                        <div class="b-card-title-wrap">
+                            <span class="overline">Reviews</span>
+                            <h2>My <i>Reflections</i></h2>
+                        </div>
+                    </div>
+
+                    <!-- Reviews list -->
+                    <div class="reviews-list-container">
+                        <div class="review-search-container">
+                            <div class="search-input-wrapper">
+                                <i class="bi bi-search"></i>
+                                <input type="text" id="productReviewSearch" class="botanical-input" 
+                                       placeholder="Find a product to review..." autocomplete="off">
+                            </div>
+                            <div id="productSearchResults" class="review-search-results">
+                                <!-- Results will be injected here -->
+                            </div>
+                        </div>
+
+                        <div th:if="${reviews == null or reviews.isEmpty()}" class="empty-state">
+                            <i class="bi bi-chat-heart"
+                                style="font-size:36px;color:var(--border-gold);display:block;margin-bottom:14px;"></i>
+                            <p>You haven't shared any reflections yet.</p>
+                        </div>
+
+                        <div th:if="${reviews != null and !reviews.isEmpty()}" class="reviews-list">
+                            <div th:each="review : ${reviews}" class="review-item">
+                                <div class="review-item-top">
+                                    <div class="review-product-info">
+                                        <img th:src="@{${review.product.imageUrl != null ? review.product.imageUrl : '/assets/images/placeholder.png'}}"
+                                            class="review-product-img" onerror="this.onerror=null; this.src='/assets/images/placeholder.png';">
+                                        <div>
+                                            <h4 class="review-product-name" th:text="${review.product.name}">Product</h4>
+                                            <div class="review-stars">
+                                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                                    th:utext="${review.rating >= i} ? '&#9733;' : '&#9734;'"></span>
+                                                <span th:if="${review.reviewStatus.name() == 'APPROVED'}"
+                                                    class="rev-status approved">Approved</span>
+                                                <span th:if="${review.reviewStatus.name() == 'PENDING'}"
+                                                    class="rev-status pending">Pending</span>
+                                                <span th:if="${review.reviewStatus.name() == 'REJECTED'}"
+                                                    class="rev-status pending" style="background-color: var(--red); color: white;">Rejected</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="review-actions">
+                                        <button class="review-action-btn" th:data-id="${review.reviewId}"
+                                            th:data-rating="${review.rating}" th:data-comment="${review.comment}"
+                                            onclick="openEditModal(this)">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <form th:action="@{'/review/delete/' + ${review.reviewId}}" method="post"
+                                              th:id="'deleteReviewForm-' + ${review.reviewId}">
+                                            <button type="button" class="review-action-btn" style="color:#D32F2F;"
+                                                    th:onclick="'confirmDeleteReview(' + ${review.reviewId} + ')'">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <p class="review-comment" th:text="${review.comment}"></p>
+                                <p class="review-date">Shared on <span
+                                        th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}">Date</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- END #my-reflections -->
+
+            </div><!-- END .dash-grid -->
+        </main>
+    </div>
+
+
+    <!-- Edit Review Modal -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 style="margin-bottom: 24px; font-family: 'Inter', sans-serif;">Refine your reflection</h3>
+            <form th:action="@{/review/edit}" method="post">
+                <input type="hidden" name="reviewId" id="editReviewId">
+
+                <div class="input-group" style="margin-bottom: 24px;">
+                    <label>Rating</label>
+                    <div class="modal-stars">
+                        <input type="radio" id="mstar5" name="rating" value="5" /><label for="mstar5">&#9733;</label>
+                        <input type="radio" id="mstar4" name="rating" value="4" /><label for="mstar4">&#9733;</label>
+                        <input type="radio" id="mstar3" name="rating" value="3" /><label for="mstar3">&#9733;</label>
+                        <input type="radio" id="mstar2" name="rating" value="2" /><label for="mstar2">&#9733;</label>
+                        <input type="radio" id="mstar1" name="rating" value="1" /><label for="mstar1">&#9733;</label>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 30px;">
+                    <label for="editComment">Reflection</label>
+                    <textarea name="comment" id="editComment" class="modal-textarea" required></textarea>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Discard</button>
+                    <button type="submit" class="btn-save" style="margin-top: 0;">Update Reflection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const allProducts = /*[[${allProducts}]]*/ [];
+        /*]]>*/
+
+        function openEditModal(btn) {
+            const id = btn.getAttribute('data-id');
+            const rating = btn.getAttribute('data-rating');
+            const comment = btn.getAttribute('data-comment');
+
+            document.getElementById('editReviewId').value = id;
+            document.getElementById('editComment').value = comment;
+
+            // Check the correct star
+            const star = document.getElementById('mstar' + rating);
+            if (star) star.checked = true;
+
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        // Close modal on escape
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeEditModal();
+        });
+
+        function enableEdit() {
+            const inputs = document.querySelectorAll('.profile-input');
+            const editBtns = document.querySelectorAll('.edit-toggle-btn');
+            inputs.forEach(input => {
+                input.removeAttribute('readonly');
+                input.removeAttribute('disabled');
+            });
+            document.getElementById('saveBtnWrap').style.display = 'block';
+            editBtns.forEach(btn => btn.style.display = 'none');
+        }
+
+        function disableEdit() {
+            const inputs = document.querySelectorAll('.profile-input');
+            const editBtns = document.querySelectorAll('.edit-toggle-btn');
+            inputs.forEach(input => {
+                if (input.tagName === 'SELECT') {
+                    input.setAttribute('disabled', 'disabled');
+                } else {
+                    input.setAttribute('readonly', 'readonly');
+                }
+            });
+            document.getElementById('saveBtnWrap').style.display = 'none';
+            editBtns.forEach(btn => btn.style.display = 'inline-flex');
+        }
+
+
+        // Profile Sidebar close helper (used by nav links on mobile)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('dashSidebar');
+            if (sidebar) sidebar.classList.toggle('show');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('dashSidebar');
+            if (sidebar) sidebar.classList.remove('show');
+        }
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function (event) {
+            const sidebar = document.getElementById('dashSidebar');
+            const trigger = document.querySelector('.dash-mobile-trigger');
+
+            if (sidebar && sidebar.classList.contains('show')) {
+                if (!sidebar.contains(event.target) && !trigger.contains(event.target)) {
+                    closeSidebar();
+                }
+            }
+        });
+
+        function setActiveLink(clickedLink) {
+            document.querySelectorAll('.b-nav-link').forEach(link => link.classList.remove('active'));
+            clickedLink.classList.add('active');
+        }
+
+        function toggleOrders() {
+            const extraOrders = document.querySelectorAll('.extra-order');
+            const btn = document.getElementById('viewMoreOrdersBtn');
+            let isHidden = true;
+
+            if (extraOrders.length > 0) {
+                isHidden = extraOrders[0].style.display === 'none';
+            }
+
+            extraOrders.forEach(order => {
+                order.style.display = isHidden ? 'block' : 'none';
+            });
+
+            btn.innerText = isHidden ? 'Show Less' : 'View More Orders';
+        }
+
+        // Product Review Search Logic
+        const reviewSearchInput = document.getElementById('productReviewSearch');
+        const searchResultsPanel = document.getElementById('productSearchResults');
+
+        if (reviewSearchInput) {
+            reviewSearchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase().trim();
+                if (query.length < 1) {
+                    searchResultsPanel.classList.remove('active');
+                    return;
+                }
+
+                const filtered = allProducts.filter(p => 
+                    p.name.toLowerCase().includes(query) || 
+                    (p.category && p.category.name.toLowerCase().includes(query))
+                );
+
+                renderSearchResults(filtered);
+            });
+
+            // Close results on click outside
+            document.addEventListener('click', (e) => {
+                if (!reviewSearchInput.contains(e.target) && !searchResultsPanel.contains(e.target)) {
+                    searchResultsPanel.classList.remove('active');
+                }
+            });
+        }
+
+        function renderSearchResults(results) {
+            if (results.length === 0) {
+                searchResultsPanel.innerHTML = '<div class="no-results-msg">No botanical products found.</div>';
+            } else {
+                searchResultsPanel.innerHTML = results.map(p => `
+                    <a href="/review/write/${p.productId}" class="search-result-item">
+                        <img src="${p.imageUrl || '/assets/images/placeholder.png'}" class="search-result-img" onerror="this.onerror=null; this.src='/assets/images/placeholder.png';">
+                        <div class="search-result-info">
+                            <h5>${p.name}</h5>
+                            <p>${p.category ? p.category.name : 'Signature Formulation'}</p>
+                        </div>
+                        <span class="write-review-badge">Write Review</span>
+                    </a>
+                `).join('');
+            }
+            searchResultsPanel.classList.add('active');
+        }
+
+        function confirmDeleteReview(reviewId) {
+            if (typeof openTBConfirm === 'function') {
+                openTBConfirm({
+                    title: 'Remove Reflection?',
+                    text: 'Are you sure you wish to permanently remove this reflection? This action cannot be undone.',
+                    icon: 'bi-trash3',
+                    confirmText: 'Remove',
+                    onConfirm: () => { 
+                        const form = document.getElementById('deleteReviewForm-' + reviewId);
+                        if (form) form.submit();
+                    }
+                });
+            } else {
+                if (confirm('Remove this reflection permanently?')) {
+                    const form = document.getElementById('deleteReviewForm-' + reviewId);
+                    if (form) form.submit();
+                }
+            }
+        }
+    </script>
+    <script th:src="@{/js/home.js}"></script>
+</body>
+
+</html>

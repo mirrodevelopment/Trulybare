@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Ritual Edit Cards')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('ritual-cards')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title"><i class="bi bi-grid-3x3-gap"></i> Ritual Edit Cards</span>
+        <a th:href="@{/admin/ritual-cards/new}" class="btn btn-primary">➕ Add New Card</a>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}">✅ <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}">  ❌ <span th:text="${error}"></span></div>
+
+        <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--navy);">Anti-Gravity Carousel Management</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Manage the cards appearing in the middle section of the homepage. These cards represent your curated "Ritual Edit".</p>
+        </div>
+
+        <div th:if="${cards.isEmpty()}" style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+            <div style="font-size:48px; margin-bottom:16px;"><i class="bi bi-grid-3x3-gap"></i></div>
+            <p style="font-size:16px; font-weight:500; margin-bottom:8px;">No ritual cards yet</p>
+            <p style="font-size:14px; margin-bottom:24px;">Add your first card to populate the homepage carousel.</p>
+            <a th:href="@{/admin/ritual-cards/new}" class="btn btn-primary">➕ Add First Card</a>
+        </div>
+
+        <!-- Cards Grid -->
+        <div th:if="${!cards.isEmpty()}"
+             style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
+            <div th:each="c : ${cards}" class="card">
+
+                <!-- Preview Image -->
+                <div style="height:180px; overflow:hidden; border-radius:14px 14px 0 0; background:rgba(250,248,245,0.8); display: flex; align-items: center; justify-content: center;">
+                    <img th:if="${c.imageUrl != null and !c.imageUrl.isBlank()}" 
+                         th:src="${c.imageUrl}" alt="Card Preview"
+                         style="width:100%; height:100%; object-fit:contain; display:block;"
+                         onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'color:var(--text-muted);font-size:13px;\'>Image not found</div>'"/>
+                    <div th:unless="${c.imageUrl != null and !c.imageUrl.isBlank()}" style="color:var(--text-muted); font-size:13px;">No image set</div>
+                </div>
+
+                <div class="card-body">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span th:if="${c.isActive}"  class="badge-status green">● Active</span>
+                        <span th:unless="${c.isActive}" class="badge-status gray">● Inactive</span>
+                        <span style="font-size:12px; color:var(--text-muted);">Order: <strong th:text="${c.displayOrder}">0</strong></span>
+                    </div>
+
+                    <h3 style="font-size:15px; font-weight:600; margin-bottom:4px;" th:text="${c.title}">Card Title</h3>
+                    <p  style="font-size:13px; color:var(--text-muted); margin-bottom:10px;" th:text="${c.subtitle}">Subtitle</p>
+
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:14px; padding: 8px; background: #f8f9fa; border-radius: 6px;">
+                        <div th:if="${c.product != null}"><strong>Linked Product:</strong> <span th:text="${c.product.name}"></span></div>
+                        <div><strong>Target Link:</strong> <span th:text="${c.buttonLink ?: '—'}"></span></div>
+                    </div>
+
+                    <div style="display:flex; gap:8px;">
+                        <a th:href="@{/admin/ritual-cards/edit/{id}(id=${c.cardId})}" class="btn btn-outline btn-sm" style="flex:1; justify-content:center;">✏ Edit</a>
+                        <form th:action="@{/admin/ritual-cards/delete/{id}(id=${c.cardId})}" method="post"
+                              onsubmit="return confirm('Delete this card?')">
+                            <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

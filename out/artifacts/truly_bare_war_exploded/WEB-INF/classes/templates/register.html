@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Truly Bare | Create Account</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <!-- Page Specific Styles -->
+    <link rel="stylesheet" th:href="@{/css/register.css}">
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="register-page">
+    <div class="register-card">
+
+        <!-- Brand Header -->
+        <div class="reg-brand">
+            <div class="brand-icon-wrap">
+                <img th:src="@{/assets/images/logo.png}" src="/assets/images/logo.png" alt="Truly Bare Logo"
+                     style="width:88px;height:88px;object-fit:contain;padding:10px;
+                            background:rgba(250,248,245,0.97);
+                            border-radius:16px;
+                            border:2px solid #C9A84C;
+                            box-shadow:0 4px 24px rgba(201,168,76,0.22), 0 0 0 4px rgba(201,168,76,0.09);">
+            </div>
+            <span class="brand-name"><span class="brand-initial">T</span>ruly <span class="brand-initial">B</span>are</span>
+            <span class="brand-tagline">Luxury Botanical Skincare</span>
+        </div>
+
+        <!-- Body -->
+        <div class="reg-body">
+            <h2 class="reg-title">Create Account</h2>
+            <p class="reg-sub">Join the world of extraordinary skincare</p>
+
+            <!-- Alerts (Thymeleaf) -->
+            <div th:if="${error}" class="alert alert-danger">
+                <i class="bi bi-exclamation-circle"></i>
+                <span th:text="${error}">An error occurred.</span>
+            </div>
+            <div th:if="${success}" class="alert alert-success">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${success}">Account created.</span>
+            </div>
+
+            <!-- Register Form -->
+            <form th:action="@{/register}" method="post" th:object="${registerRequest}">
+
+                <div class="form-group">
+                    <label class="form-label" for="fullName">Full Name</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-person input-icon"></i>
+                        <input type="text" id="fullName" th:field="*{fullName}"
+                               class="form-input" placeholder="Your full name" required autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-envelope input-icon"></i>
+                        <input type="email" id="email" th:field="*{email}"
+                               class="form-input" placeholder="your@email.com" required autocomplete="email">
+                    </div>
+                    <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" style="color: #8B1A1A; font-size: 11px; margin-top: 5px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-telephone input-icon"></i>
+                        <input type="tel" id="phone" th:field="*{phone}"
+                               class="form-input" placeholder="10-digit mobile number" required autocomplete="tel">
+                    </div>
+                    <p th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}" style="color: #8B1A1A; font-size: 11px; margin-top: 5px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-lock input-icon"></i>
+                        <input type="password" id="password" th:field="*{password}"
+                               class="form-input" placeholder="Min. 8 characters with symbols"
+                               required minlength="8" 
+                               pattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\S+$).{8,}$"
+                               title="Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one number, and one special character"
+                               autocomplete="new-password">
+                        <button type="button" class="toggle-password" data-target="password"
+                                style="position:absolute;right:12px;background:none;border:none;cursor:pointer;color:#9E9E9E;font-size:14px;padding:0;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <p class="input-hint" style="font-size: 11px; color: #888; margin-top: 5px;">
+                        Must be 8+ characters with at least one uppercase, number, and symbol (@#$%^&+=!)
+                    </p>
+                    <!-- Strength bar -->
+                    <div class="strength-bar-wrap">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-lock-fill input-icon"></i>
+                        <input type="password" id="confirmPassword" th:field="*{confirmPassword}"
+                               class="form-input" placeholder="Confirm your password"
+                               required autocomplete="new-password">
+                        <button type="button" class="toggle-password" data-target="confirmPassword"
+                                style="position:absolute;right:12px;background:none;border:none;cursor:pointer;color:#9E9E9E;font-size:14px;padding:0;">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <span id="matchHint" style="font-size:11px;margin-top:5px;display:block;"></span>
+                </div>
+
+                <div class="terms-wrap">
+                    <input type="checkbox" id="terms" th:field="*{termsAccepted}" required>
+                    <label for="terms">
+                        I agree to the <a th:href="@{/legal#terms}">Terms &amp; Conditions</a> and <a th:href="@{/legal#privacy}">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-submit" id="registerBtn">
+                    <i class="bi bi-person-plus"></i> Create Account
+                </button>
+            </form>
+
+            <hr class="gold-rule">
+
+            <div class="reg-footer">
+                <p>Already have an account?
+                    <a th:href="@{/login}" href="/login"><strong>Sign In</strong></a>
+                </p>
+                <a th:href="@{/home}" href="/home" class="back-home">
+                    <i class="bi bi-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/register.js}"></script>
+</body>
+</html>

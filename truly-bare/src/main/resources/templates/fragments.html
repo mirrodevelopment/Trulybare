@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="header_head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#FAF8F5">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link rel="icon" type="image/png" th:href="@{/assets/images/logo.png}">
+    <link rel="shortcut icon" type="image/png" th:href="@{/assets/images/logo.png}">
+    <link rel="apple-touch-icon" th:href="@{/assets/images/logo.png}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Playfair+Display:wght@400;500;600&family=Inter:wght@200;300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script th:src="@{/js/global.js}"></script>
+    <style>
+        .category-subnav {
+            border-top: 1px solid #EAEAEA;
+            background-color: var(--pale-white);
+            padding: 10px 0;
+        }
+        .category-subnav::-webkit-scrollbar {
+            display: none;
+        }
+        .subnav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        .subnav-search {
+            display: flex;
+            align-items: center;
+            background: #FAF8F5;
+            border: 1px solid #Eaeaea;
+            border-radius: 4px;
+            padding: 6px 12px;
+            gap: 10px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .subnav-search i {
+            color: #999;
+        }
+        .subnav-search input {
+            border: none;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            outline: none;
+            color: #333;
+            width: 180px;
+        }
+        .subnav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+        .subnav-links::-webkit-scrollbar {
+            display: none;
+        }
+        .subnav-links a {
+            text-decoration: none;
+            color: #666;
+            font-family: 'Inter', sans-serif;
+            font-size: 13.5px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            padding-bottom: 4px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            animation: slideInFadeUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        /* Staggered load animation delays */
+        .subnav-links a:nth-child(1) { animation-delay: 0.1s; }
+        .subnav-links a:nth-child(2) { animation-delay: 0.15s; }
+        .subnav-links a:nth-child(3) { animation-delay: 0.2s; }
+        .subnav-links a:nth-child(4) { animation-delay: 0.25s; }
+        .subnav-links a:nth-child(5) { animation-delay: 0.3s; }
+        .subnav-links a:nth-child(6) { animation-delay: 0.35s; }
+        
+        @keyframes slideInFadeUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .subnav-links a i {
+            font-size: 14px;
+            color: #C9A84C;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s ease;
+        }
+        
+        .subnav-links a:hover {
+            color: #8B1A1A;
+        }
+        
+        .subnav-links a:hover i {
+            transform: translateY(-3px) scale(1.1);
+            color: #8B1A1A;
+        }
+
+        .subnav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 1.5px;
+            background-color: #C9A84C;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .subnav-links a:hover::after,
+        .subnav-links a.active::after {
+            width: 100%;
+        }
+        .subnav-links a.active {
+            color: #8B1A1A;
+        }
+        .subnav-links a.active i {
+            color: #8B1A1A;
+        }
+        @media (max-width: 768px) {
+            .subnav-container {
+                gap: 15px;
+            }
+            .subnav-search input {
+                width: 110px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ANNOUNCEMENT BAR (Rotating Ticker) -->
+    <div th:fragment="announcement_bar" class="announcement-bar" id="announcementBar">
+        <div class="container">
+            <div class="announcement-ticker" id="announcementTicker"></div>
+        </div>
+        <style>
+            .announcement-ticker {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 28px;
+                overflow: hidden;
+                position: relative;
+            }
+            .announcement-msg {
+                position: absolute;
+                width: 100%;
+                text-align: center;
+                font-size: 11px;
+                letter-spacing: 2.5px;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.9);
+                font-weight: 400;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: opacity 0.5s ease, transform 0.5s ease;
+                pointer-events: none;
+                margin: 0;
+                padding: 0;
+            }
+            .announcement-msg.active {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+            .announcement-msg.exit {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        </style>
+        <script th:inline="javascript">
+        (function() {
+            const msgs = /*[[${announcements}]]*/ ["Complimentary shipping on all orders over ₹2,500"];
+            const ticker = document.getElementById('announcementTicker');
+            if (!ticker || !msgs || msgs.length === 0) return;
+
+            msgs.forEach(function(text, i) {
+                const el = document.createElement('p');
+                el.className = 'announcement-msg' + (i === 0 ? ' active' : '');
+                el.textContent = text;
+                ticker.appendChild(el);
+            });
+
+            if (msgs.length <= 1) return;
+
+            let current = 0;
+            setInterval(function() {
+                const items = ticker.querySelectorAll('.announcement-msg');
+                items[current].classList.add('exit');
+                items[current].classList.remove('active');
+                setTimeout(function() {
+                    items[current].classList.remove('exit');
+                    current = (current + 1) % items.length;
+                    items[current].classList.add('active');
+                }, 500);
+            }, 3000);
+        })();
+        </script>
+    </div>
+
+
+
+    <!-- HEADER -->
+    <header th:fragment="main_header" class="header" id="header">
+        <div th:replace="~{::suspension_modal}"></div>
+        <div th:replace="~{::tb_confirm_pop}"></div>
+        <div class="header-container">
+            <!-- Left: Logo acts as Hamburger -->
+            <div class="header-left">
+                <button class="mobile-ham-btn" id="mobileMenuBtn" aria-label="Open navigation menu"
+                    aria-expanded="false" style="padding: 0; background: transparent; border: none; display: flex; flex-direction: row !important; align-items: center; gap: 10px;">
+                    <div class="logo-box">
+                        <img th:src="@{/assets/images/logo.png}" alt="Truly Bare" class="logo-box-img">
+                    </div>
+                    <div class="ham-bars">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Center: Luxury Brand Text -->
+            <a th:href="@{/home}" class="brand-logo" aria-label="Truly Bare Home"><span
+                    class="brand-initial">T</span>RULY <span class="brand-initial">B</span>ARE</a>
+
+            <nav>
+                <ul class="header-nav">
+                    <li><a th:href="@{/home}">Home</a></li>
+                    <li><a th:href="@{/products}">Shop</a></li>
+                    <li><a th:href="@{/house-of-vegam}">House of Vegam</a></li>
+                    <li><a href="/home#about">About</a></li>
+                    <li><a href="/home#vlogSection">Vlogs</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-icons">
+
+                <a th:href="@{/profile}" aria-label="Profile"><i class="bi bi-person"></i></a>
+                <a th:href="@{/cart}" aria-label="Cart" style="position:relative;">
+                    <i class="bi bi-bag"></i>
+                    <span class="cart-badge" id="cartBadge">0</span>
+                </a>
+            </div>
+        </div>
+        <!-- Category Sub-Navigation -->
+        <div class="category-subnav">
+            <div class="subnav-container">
+                <div class="subnav-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search for botanicals, blends and..." onkeyup="performSearch()" autocomplete="off" />
+                    <div id="searchResultsDropdown" style="display:none; position:absolute; top:calc(100% + 10px); left:0; width:100%; min-width:300px; background:var(--pale-white); border-radius:12px; box-shadow:0 8px 32px rgba(28,28,26,0.1); border:1px solid #f0f0f0; max-height:300px; overflow-y:auto; z-index:100;"></div>
+                </div>
+                <div class="subnav-links">
+                    <a th:href="@{/products(category='SUPPLEMENTS')}" th:classappend="${category != null and category.name == 'SUPPLEMENTS'} ? 'active' : ''"><i class="bi bi-capsule"></i> Supplements</a>
+                    <a th:href="@{/products(category='WEIGHT LOSS')}" th:classappend="${category != null and category.name == 'WEIGHT LOSS'} ? 'active' : ''"><i class="bi bi-activity"></i> Weight Loss</a>
+                    <a th:href="@{/products(category='COSMETICS')}" th:classappend="${category != null and (category.name == 'COSMETICS' or category.name == 'SKIN CARE' or category.name == 'HAIR CARE')} ? 'active' : ''"><i class="bi bi-stars"></i> Cosmetics</a>
+                    <a th:href="@{/products(category='PAIN RELIEF')}" th:classappend="${category != null and category.name == 'PAIN RELIEF'} ? 'active' : ''"><i class="bi bi-bandaid"></i> Pain Relief</a>
+                    <a th:href="@{/house-of-vegam}"><i class="bi bi-gem"></i> House of Vegam</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MOBILE NAV DRAWER (Premium Sidebar Style) -->
+    <nav th:fragment="mobile_nav" class="mobile-nav-drawer" id="mobileNav" aria-hidden="true">
+        <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+        <div class="mobile-nav-content">
+            <!-- Header Section (User Info / Welcome) -->
+            <div class="mobile-nav-user-section">
+                <div class="user-info-flex">
+                    <div class="user-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div class="user-text">
+                        <span class="welcome-label">Welcome</span>
+                        <h4 class="user-name" th:text="${#authentication.name != 'anonymousUser' ? #authentication.name : 'Truly Bare Guest'}">Truly Bare Guest</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Close Button (Absolute positioned) -->
+            <button class="mobile-nav-close-btn" id="mobileNavClose" aria-label="Close menu">
+                &times;
+            </button>
+
+            <!-- Menu Links Section -->
+            <div class="mobile-nav-scroll-area">
+                <ul class="mobile-menu-list">
+                    <li>
+                        <a th:href="@{/home}">
+                            <span class="menu-icon">H</span>
+                            <span class="menu-label">Home</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/products}">
+                            <span class="menu-icon">S</span>
+                            <span class="menu-label">Shop Botanicals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/house-of-vegam}">
+                            <span class="menu-icon">V</span>
+                            <span class="menu-label">House of Vegam</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/loyalty-program}">
+                            <span class="menu-icon">L</span>
+                            <span class="menu-label">Loyalty Program</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/home#about">
+                            <span class="menu-icon">A</span>
+                            <span class="menu-label">Our Story</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/home#vlogSection">
+                            <span class="menu-icon">V</span>
+                            <span class="menu-label">Botanical Vlogs</span>
+                        </a>
+                    </li>
+                    
+                    <li class="menu-divider"></li>
+                    <li class="menu-section-title">My Account</li>
+                    
+                    <li>
+                        <a th:href="@{/profile}">
+                            <i class="bi bi-person-gear menu-icon-bi"></i>
+                            <span class="menu-label">My Profile</span>
+                            <i class="bi bi-chevron-right menu-chevron"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/order-history}">
+                            <i class="bi bi-clock-history menu-icon-bi"></i>
+                            <span class="menu-label">Order History</span>
+                            <i class="bi bi-chevron-right menu-chevron"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/return/track}">
+                            <i class="bi bi-arrow-repeat menu-icon-bi"></i>
+                            <span class="menu-label">Track Returns</span>
+                            <i class="bi bi-chevron-right menu-chevron"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/cart}">
+                            <i class="bi bi-bag menu-icon-bi"></i>
+                            <span class="menu-label">Shopping Cart</span>
+                            <i class="bi bi-chevron-right menu-chevron"></i>
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="mobile-nav-footer">
+                    <div class="mobile-nav-auth-bottom">
+                        <a th:if="${#authentication.name != 'anonymousUser'}" th:href="@{/logout}" class="btn-auth-bottom signout">
+                            <i class="bi bi-box-arrow-right"></i> Sign out
+                        </a>
+                        <a th:if="${#authentication.name == 'anonymousUser'}" th:href="@{/login}" class="btn-auth-bottom signin">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign in
+                        </a>
+                    </div>
+                    <p>&copy; 2026 Truly Bare Luxury</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- FOOTER -->
+    <footer th:fragment="main_footer" class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <a th:href="@{/home}" class="brand-logo"
+                        style="margin-bottom: 20px; display: inline-flex; align-items: center; gap: 15px;">
+                        <img th:src="@{/assets/images/logo.png}" alt="Truly Bare" class="footer-logo-premium">
+                        <span><span class="brand-initial">T</span>RULY <span class="brand-initial">B</span>ARE</span>
+                    </a>
+                    <p class="footer-tagline">Luxury botanical skincare of extraordinary subtlety and efficacy.</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Orders &amp; Support</h4>
+                    <ul>
+                        <li><a href="tel:918012954109"><i class="bi bi-telephone"></i> Call: 8012954109</a></li>
+                        <li><a href="https://wa.me/918012954109" target="_blank"><i class="bi bi-whatsapp"></i> WhatsApp Us</a></li>
+                        <li><a href="https://maps.app.goo.gl/4tCc4KEchDHfymz99" target="_blank"><i class="bi bi-geo-alt"></i> 12/87 Sathy cross no:1, Gandhipuram, Coimbatore 641012</a></li>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a th:href="@{/order-history}">Shipping &amp; Returns</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>About</h4>
+                    <ul>
+                        <li><a href="#">Our Story</a></li>
+                        <li><a href="#">Sustainability</a></li>
+                        <li><a href="https://maps.app.goo.gl/4tCc4KEchDHfymz99" target="_blank"
+                                rel="noopener noreferrer"><i class="bi bi-map"></i> Store Locator</a></li>
+
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>WhatsApp Updates</h4>
+                    <p>Receive formulations of note and exclusive previews directly on WhatsApp.</p>
+                    <form class="newsletter-form" onsubmit="return false;">
+                        <input type="tel" placeholder="WhatsApp Number" id="newsletterWhatsApp">
+                        <button type="submit" title="Subscribe via WhatsApp"><i class="bi bi-whatsapp"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; Truly Bare&reg; 2026. All rights reserved.</p>
+                <div class="footer-links">
+                    <a th:href="@{/loyalty-program}">Loyalty Program</a>
+                    <a th:href="@{/legal#privacy}">Privacy Policy</a>
+                    <a th:href="@{/legal#terms}">Terms of Service</a>
+                    <a th:href="@{/legal#accessibility}">Accessibility</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- PRODUCT QUICK VIEW MODAL (Luxury Drawer) -->
+    <div th:fragment="quick_view_modal" id="productQuickViewModal" class="qv-modal">
+        <div class="qv-backdrop" onclick="closeQuickView()"></div>
+        <div class="qv-container">
+            <button class="qv-close" onclick="closeQuickView()"><i class="bi bi-x-lg"></i></button>
+            <div class="qv-layout">
+                <!-- Left: Image Gallery -->
+                <div class="qv-image-pane">
+                    <div class="swiper qv-swiper">
+                        <div class="swiper-wrapper" id="qvSwiperWrapper">
+                            <!-- Slides will be injected via JS -->
+                            <div class="swiper-slide">
+                                <img id="qvImage" src="" alt="Product Image">
+                            </div>
+                        </div>
+                        <div class="swiper-pagination"></div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                    </div>
+                </div>
+
+                <!-- Right: Details -->
+                <div class="qv-info-pane">
+                    <div class="qv-header">
+                        <span class="qv-subtitle" id="qvSubtitle">Focus & Clarity</span>
+                        <h2 class="qv-title" id="qvTitle">Daily Elixir</h2>
+                        <p class="qv-short-desc" id="qvDesc">A gentle antioxidant-rich blend for everyday balance and
+                            vitality.</p>
+                    </div>
+
+                    <div class="qv-price-wrap">
+                        <div class="price-stack" style="gap: 2px;">
+                            <span class="p-price original-strike" id="qvOriginalPrice" style="display:none;">₹0.00</span>
+                            <span class="qv-price" id="qvPrice">₹0.00</span>
+                        </div>
+                        <p class="qv-tax-info">Inclusive of all taxes. GST (18%) and ₹49 delivery applied at checkout.
+                        </p>
+                    </div>
+
+                    <!-- Dynamic Icons Container -->
+                    <div id="qvTypeIcons" class="product-type-icons detail-icons" style="margin-bottom: 25px;">
+                        <!-- Icons injected via JS -->
+                    </div>
+
+                    <!-- Badges -->
+                    <div class="qv-badges">
+                        <span class="badg"><i class="bi bi-box-seam"></i> Net Wt. 50g</span>
+                        <span class="badg"><i class="bi bi-leaf"></i> 100% Natural</span>
+                        <span class="badg"><i class="bi bi-droplet"></i> No Synthetics</span>
+                        <span class="badg"><i class="bi bi-flower1"></i> Organic</span>
+                        <span class="badg"><i class="bi bi-cup-hot"></i> Caffeine Free</span>
+                        <span class="badg"><i class="bi bi-shield-check"></i> Lab Tested</span>
+                    </div>
+
+                    <!-- Stock Status -->
+                    <div id="qvStockStatus" style="margin-bottom: 12px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;"></div>
+
+                    <!-- Action -->
+                    <div class="qv-action">
+                        <div class="qv-quantity">
+                            <input type="number" id="qvQuantity" value="1" min="1" max="99">
+                        </div>
+                        <button class="btn-primary qv-add-btn" onclick="addToCartFromQuickView()">
+                            Add to Cart &rarr;
+                        </button>
+                    </div>
+                    <div class="qv-shipping">
+                        <i class="bi bi-truck"></i> Free shipping on Premium. Standard delivery ₹49. Ships in 2–4
+                        business days.
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="qv-tabs-container">
+                        <div class="qv-tab-headers">
+                            <button class="qv-tab-btn active" data-tab="details">Details</button>
+                            <button class="qv-tab-btn" data-tab="ingredients">Ingredients</button>
+                            <button class="qv-tab-btn" data-tab="benefits">Benefits</button>
+                            <button class="qv-tab-btn" data-tab="usage">FAQ / Usage</button>
+                        </div>
+                        <div class="qv-tab-content">
+                            <!-- Details Tab -->
+                            <div id="tab-details" class="qv-pane active">
+                                <p id="qvDetailsText">Discover the refined elegance of this botanical blend...</p>
+                            </div>
+                            <!-- Ingredients Tab -->
+                            <div id="tab-ingredients" class="qv-pane">
+                                <p id="qvIngredientsText">Formulated using the highest quality natural components...</p>
+                            </div>
+                            <!-- Benefits Tab -->
+                            <div id="tab-benefits" class="qv-pane">
+                                <h4 class="qv-pane-title">How It Works</h4>
+                                <p id="qvBenefitsText">The antioxidants work to neutralize free radicals...</p>
+                            </div>
+                            <!-- FAQ / Usage Tab -->
+                            <div id="tab-usage" class="qv-pane">
+                                <h4 class="qv-pane-title">Usage & Directions</h4>
+                                <p id="qvUsageText">Steep 1 tsp in hot water for 5-7 minutes. Enjoy morning or
+                                    afternoon.</p>
+                                <div class="qv-warnings">
+                                    <p id="qvWarningsText">Warnings: Consult a physician if pregnant or on medication. |
+                                        Storage: Store in a cool, dry place away from sunlight.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCOUNT SUSPENDED MODAL -->
+    <div th:fragment="suspension_modal" th:if="${isAccountSuspended}" id="suspensionModal" class="suspension-modal">
+        <div class="suspension-backdrop"></div>
+        <div class="suspension-content">
+            <div class="suspension-icon">🚫</div>
+            <h2>Account Suspended</h2>
+            <p>Your account has been suspended by the administrator. You are currently restricted from accessing site features.</p>
+            <div class="suspension-details">
+                <p><strong>Reason:</strong> Violation of terms or administrative action.</p>
+                <p><strong>Next Steps:</strong> Please contact our support team at <a href="mailto:support@trulybare.com">support@trulybare.com</a> or call us at <a href="tel:+918012954109">8012954109</a> to resolve this.</p>
+            </div>
+            <a href="/logout" class="btn-primary" style="margin-top:20px; width:100%; justify-content:center;">Log Out</a>
+        </div>
+        <style>
+            .suspension-modal {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100vw; height: 100vh;
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .suspension-backdrop {
+                position: absolute;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(250, 248, 245, 0.95);
+                backdrop-filter: blur(8px);
+            }
+            .suspension-content {
+                position: relative;
+                background: white;
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 20px 50px rgba(92, 61, 46, 0.15);
+                max-width: 450px;
+                width: 100%;
+                text-align: center;
+                border: 1px solid var(--border);
+                animation: qvSlideIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            .suspension-icon {
+                font-size: 60px;
+                margin-bottom: 20px;
+            }
+            .suspension-content h2 {
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 32px;
+                color: var(--bark);
+                margin-bottom: 15px;
+            }
+            .suspension-content p {
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                color: var(--text-medium);
+                line-height: 1.6;
+            }
+            .suspension-details {
+                margin-top: 25px;
+                padding: 20px;
+                background: var(--bg-light);
+                border-radius: 12px;
+                text-align: left;
+            }
+            .suspension-details p {
+                margin-bottom: 8px;
+                font-size: 13px;
+            }
+            .suspension-details a {
+                color: var(--garnet);
+                font-weight: 600;
+                text-decoration: none;
+            }
+        </style>
+        <script>
+            // Prevent scrolling and interaction
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') e.preventDefault();
+            }, true);
+        </script>
+    </div>
+    
+    <!-- TRULY BARE CONFIRMATION POP (Luxury Generic Modal) -->
+    <div th:fragment="tb_confirm_pop" id="tbConfirmPop" class="logout-pop-overlay">
+        <div class="logout-pop-backdrop" onclick="closeTBConfirm()"></div>
+        <div class="logout-pop-content">
+            <div class="logout-pop-icon" id="tbConfirmIcon">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <h3 class="logout-pop-title" id="tbConfirmTitle">Are you sure?</h3>
+            <p class="logout-pop-text" id="tbConfirmText">Please confirm your selection to proceed.</p>
+            <div class="logout-pop-actions">
+                <button class="btn-pop-stay" onclick="closeTBConfirm()">Cancel</button>
+                <button id="tbConfirmActionBtn" class="btn-pop-leave">Confirm</button>
+            </div>
+        </div>
+        <style>
+            .logout-pop-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 10000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+            }
+            .logout-pop-overlay.active {
+                display: flex;
+            }
+            .logout-pop-backdrop {
+                position: absolute;
+                inset: 0;
+                background: rgba(28, 28, 26, 0.4);
+                backdrop-filter: blur(8px);
+                animation: fadeIn 0.4s ease;
+            }
+            .logout-pop-content {
+                position: relative;
+                width: 100%;
+                max-width: 400px;
+                background: #FFFFFF;
+                border-radius: 24px;
+                padding: 40px 32px;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+                border: 1px solid rgba(201, 168, 76, 0.15);
+                animation: popIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            .logout-pop-icon {
+                width: 64px;
+                height: 64px;
+                background: rgba(139, 26, 26, 0.05);
+                color: #8B1A1A;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                margin: 0 auto 24px;
+            }
+            .logout-pop-title {
+                font-family: 'Playfair Display', serif;
+                font-size: 24px;
+                font-weight: 600;
+                color: #1C1C1A;
+                margin-bottom: 12px;
+                letter-spacing: 0.5px;
+            }
+            .logout-pop-text {
+                font-size: 14px;
+                line-height: 1.6;
+                color: #666;
+                margin-bottom: 32px;
+                font-family: 'Inter', sans-serif;
+            }
+            .logout-pop-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .btn-pop-stay {
+                padding: 14px;
+                border-radius: 12px;
+                border: 1px solid #Eaeaea;
+                background: #F9F9F7;
+                color: #666;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                outline: none;
+            }
+            .btn-pop-stay:hover {
+                background: #EEEEEE;
+                color: #1C1C1A;
+            }
+            .btn-pop-leave {
+                padding: 14px;
+                border-radius: 12px;
+                background: #8B1A1A;
+                color: #FFFFFF;
+                border: none;
+                font-weight: 600;
+                font-size: 14px;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                outline: none;
+            }
+            .btn-pop-leave:hover {
+                background: #A02020;
+                box-shadow: 0 4px 12px rgba(139, 26, 26, 0.2);
+                transform: translateY(-1px);
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes popIn {
+                from { opacity: 0; transform: scale(0.9) translateY(20px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+        </style>
+        <script>
+            let currentConfirmCallback = null;
+
+            function closeTBConfirm() {
+                const pop = document.getElementById('tbConfirmPop');
+                if (pop) pop.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            /**
+             * Open the generic Truly Bare Confirm Pop
+             * @param {Object} options { title, text, icon, confirmText, onConfirm }
+             */
+            function openTBConfirm(options) {
+                const pop = document.getElementById('tbConfirmPop');
+                if (!pop) return;
+
+                document.getElementById('tbConfirmTitle').textContent = options.title || 'Are you sure?';
+                document.getElementById('tbConfirmText').textContent = options.text || 'Please confirm to proceed.';
+                document.getElementById('tbConfirmActionBtn').textContent = options.confirmText || 'Confirm';
+                
+                if (options.icon) {
+                    document.getElementById('tbConfirmIcon').innerHTML = `<i class="bi ${options.icon}"></i>`;
+                }
+
+                currentConfirmCallback = options.onConfirm;
+                
+                pop.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            document.getElementById('tbConfirmActionBtn').addEventListener('click', () => {
+                if (currentConfirmCallback) currentConfirmCallback();
+                closeTBConfirm();
+            });
+        </script>
+    </div>
+</body>
+</html>

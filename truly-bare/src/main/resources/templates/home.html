@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Truly Bare | Luxury Botanical Skincare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <!-- Page Specific Styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" th:href="@{/css/home.css(v=${#dates.createNow().getTime()})}">
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <main>
+        <!-- HERO CAROUSEL -->
+        <section class="hero-swiper swiper" id="hero">
+            <div class="swiper-wrapper">
+                <!-- Dynamic Slides from DB -->
+                <div th:each="slide : ${slides}" class="swiper-slide hero-slide">
+                    <div class="hero-slide-bg" 
+                         th:style="${slide.imageUrl != null and !#strings.isEmpty(slide.imageUrl)} 
+                            ? 'background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(' + ${slide.imageUrl} + ');'
+                            : 'background: linear-gradient(160deg, #FAF6F0 0%, #F5EDE2 50%, #FBF8F3 100%);'"></div>
+                    <div class="hero-content">
+                        <span class="hero-badge" th:text="${slide.subtitle}">Luxury Botanical Wellness</span>
+                        <h1 class="hero-title" th:utext="${slide.title}">Skin of <em>rare</em><br>distinction</h1>
+                        <div class="hero-divider"><span class="hero-divider-gem"></span></div>
+                        <div class="hero-cta-group">
+                            <a th:if="${not #strings.isEmpty(slide.buttonLink)}" 
+                               th:href="${slide.buttonLink}" 
+                               th:target="${#strings.startsWith(slide.buttonLink, 'http')} ? '_blank' : '_self'"
+                               rel="noopener noreferrer"
+                               class="btn-primary">
+                                <i class="bi bi-grid"></i> <span th:text="${slide.buttonText}">Explore Collection</span>
+                            </a>
+                            <a href="#about" class="btn-ghost">
+                                Our Story <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fallback if no slides exist -->
+                <div th:if="${#lists.isEmpty(slides)}" class="swiper-slide hero-slide">
+                    <div class="hero-slide-bg" style="background: linear-gradient(160deg, #FAF6F0 0%, #F5EDE2 50%, #FBF8F3 100%);"></div>
+                    <div class="hero-content">
+                        <span class="hero-badge">Truly Bare Ritual</span>
+                        <h1 class="hero-title">Botanical <em>distinction</em></h1>
+                        <div class="hero-divider"><span class="hero-divider-gem"></span></div>
+                        <p class="hero-subtitle">Experience our range of high-performance luxury skincare.</p>
+                        <div class="hero-cta-group">
+                            <a href="#shop" class="btn-primary">Explore Collection</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add Pagination & Nav if needed -->
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </section>
+
+        <!-- ===== ANTI-GRAVITY CAROUSEL (The Ritual Edit) ===== -->
+        <section class="anti-gravity-section" id="ritualEdit">
+
+            <!-- Section label -->
+            <div class="mosaic-header-split container">
+                <div class="mosaic-header-left">
+                    <span class="mosaic-eyebrow" th:text="${ritualEyebrow}">The Ritual Edit</span>
+                    <h2 class="mosaic-title-split" th:utext="${ritualTitle}" style="color: var(--bold-red);">Crafted for the<br><em>senses</em></h2>
+                </div>
+                <div class="mosaic-header-right">
+                    <p class="mosaic-desc-split" th:text="${ritualDesc}">Our masterclass formulations will help you create a unique skincare
+                        ritual. Our team has done everything to ensure you can express your inner world through your
+                        daily routine.</p>
+                </div>
+            </div>
+
+            <!-- The 2:1:2 Carousel -->
+            <div class="ag-carousel-container" id="agCarouselContainer">
+                <div class="ag-carousel-track" id="agCarouselTrack">
+                    <!-- Cards will be dynamically positioned via JS -->
+                <!-- Combined Carousel: Ritual Cards + Featured Products -->
+                <th:block th:with="totalCount=${(ritualCards != null ? ritualCards.size() : 0) + (featuredProducts != null ? featuredProducts.size() : 0)}">
+                    
+                    <!-- 1. Custom Ritual Cards -->
+                    <th:block th:if="${ritualCards != null}">
+                        <div th:each="card, stat : ${ritualCards}" 
+                             class="ag-card" 
+                             th:data-index="${stat.index}"
+                             th:data-product-id="${card.product != null ? card.product.productId : ''}"
+                             th:data-name="${card.title}"
+                             th:data-subtitle="${card.subtitle}"
+                             th:data-img="${card.imageUrl}"
+                             th:data-price="${card.product != null ? card.product.price : '0.00'}"
+                             th:data-desc="${card.product != null ? card.product.description : ''}"
+                             th:data-ingredients="${card.product != null ? card.product.ingredients : ''}"
+                             th:data-benefits="${card.product != null ? card.product.benefits : ''}"
+                             th:data-usage="${card.product != null ? card.product.usageInstructions : ''}"
+                             th:data-warnings="${card.product != null ? card.product.warnings : ''}"
+                             th:data-stock="${card.product != null ? (card.product.forceSoldOut ? 0 : card.product.stockQuantity) : 999}"
+                             th:data-link="${card.buttonLink}"
+                             th:data-sub-img-1="${card.product != null ? card.product.subImageUrl1 : ''}"
+                             th:data-sub-img-2="${card.product != null ? card.product.subImageUrl2 : ''}"
+                             th:data-sub-img-3="${card.product != null ? card.product.subImageUrl3 : ''}"
+                             th:data-sub-img-4="${card.product != null ? card.product.subImageUrl4 : ''}">
+                            
+                            <div class="ag-card-inner">
+                                <div class="ag-card-img-wrap">
+                                    <img th:src="${card.imageUrl != null and !#strings.isEmpty(card.imageUrl)} ? ${card.imageUrl} : @{/assets/images/logo.png}"
+                                         th:alt="${card.title}">
+                                    <div class="card-badges">
+                                        <span th:if="${card.product != null and card.product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                        <span th:if="${card.product != null and card.product.isNew}" class="card-badge new">New</span>
+                                        <span th:if="${card.product != null and card.product.isClassic}" class="card-badge classic">Classic</span>
+                                        <span th:if="${card.product != null and ((card.product.forceSoldOut ?: false) or (card.product.stockQuantity ?: 0) <= 3)}" class="card-badge oos">Sold Out</span>
+                                    </div>
+                                </div>
+                                <div class="ag-card-text">
+                                    <h4 th:text="${card.title}">Product Name</h4>
+                                    <p th:text="${card.subtitle}">Subtitle</p>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+
+                    <!-- 2. Featured Products (Append after Ritual Cards) -->
+                    <th:block th:if="${featuredProducts != null}">
+                        <div th:each="product, stat : ${featuredProducts}" 
+                             class="ag-card" 
+                             th:data-index="${(ritualCards != null ? ritualCards.size() : 0) + stat.index}"
+                             th:data-product-id="${product.productId}" th:data-name="${product.name}" 
+                             th:data-subtitle="${product.subtitle}" 
+                             th:data-desc="${product.description}"
+                             th:data-price="${product.price}" 
+                             th:data-img="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                             th:data-sub-img-1="${product.subImageUrl1}"
+                             th:data-sub-img-2="${product.subImageUrl2}"
+                             th:data-sub-img-3="${product.subImageUrl3}"
+                             th:data-sub-img-4="${product.subImageUrl4}"
+                             th:data-ingredients="${product.ingredients}"
+                             th:data-benefits="${product.benefits}"
+                             th:data-usage="${product.usageInstructions}"
+                             th:data-warnings="${product.warnings}"
+                             th:data-category="${product.category != null ? product.category.name : ''}"
+                             th:data-stock="${(product.forceSoldOut ?: false) ? 0 : (product.stockQuantity ?: 0)}">
+                            
+                            <div class="ag-card-inner">
+                                <div class="ag-card-img-wrap">
+                                    <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                        th:alt="${product.name}">
+                                    <div class="card-badges">
+                                        <span th:if="${product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                        <span th:if="${product.isNew}" class="card-badge new">New</span>
+                                        <span th:if="${product.isClassic}" class="card-badge classic">Classic</span>
+                                        <!-- Sold Out Tag Removed -->
+                                    </div>
+                                </div>
+                                <div class="ag-card-text">
+                                    <h4 th:text="${product.name}">Product Name</h4>
+                                    <p th:text="${product.subtitle != null ? product.subtitle : (product.description != null ? (#strings.length(product.description) > 60 ? #strings.substring(product.description,0,60) + '...' : product.description) : '')}">Subtitle or short desc</p>
+                                    <div th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                         style="margin-top: 8px; font-size: 10px; color: var(--bold-red); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                                        Sold Out
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </th:block>
+                </div>
+
+                <div class="ag-controls">
+                    <button class="ag-btn" id="agPrevBtn"><i class="bi bi-chevron-left"></i></button>
+                    <button class="ag-btn" id="agNextBtn"><i class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Tagline beneath grid -->
+
+
+        </section>
+
+
+
+        <!-- CATEGORIZED PRODUCT SECTIONS -->
+        <div class="container" id="shop">
+
+            <!-- SECTION: COSMETICS (LEAD COLLECTION) -->
+            <div class="category-showcase">
+                <div class="category-header">
+                    <span class="category-overline">The Botanical Archive</span>
+                    <div class="header-flex">
+                        <div class="title-group">
+                            <h2 class="section-title">Cosmetics</h2>
+                            <div class="section-divider"><span class="section-divider-dot"></span></div>
+                            <p class="section-subtitle">A curated collection of extraordinary skincare and haircare
+                                rituals.</p>
+                        </div>
+                        <a th:if="${cosmeticsCat != null}"
+                            th:href="@{'/products/category/' + ${cosmeticsCat.categoryId}}" class="view-all-link">
+                            Explore <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Nested Sub-Collections -->
+                <div class="home-directory-grid animate-fade-up">
+                    <a th:if="${skinCareCat != null}" th:href="@{/products(category='SKIN CARE')}"
+                        class="home-directory-card skin-ritual">
+                        <div class="card-overlay-gradient"></div>
+                        <div class="card-inner-box">
+                            <span class="card-tag">Ritual</span>
+                            <h3>Skin Care</h3>
+                            <p th:text="${skinCareCat.description}">Radiance boosting botanical formulations.</p>
+                            <span class="explore-btn">Discover <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+
+                    <a th:if="${hairCareCat != null}" th:href="@{/products(category='HAIR CARE')}"
+                        class="home-directory-card hair-ritual">
+                        <div class="card-overlay-gradient"></div>
+                        <div class="card-inner-box">
+                            <span class="card-tag">Ritual</span>
+                            <h3>Hair Care</h3>
+                            <p th:text="${hairCareCat.description}">Revitalising care for scalp and strand.</p>
+                            <span class="explore-btn">Discover <i class="bi bi-arrow-right"></i></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- SECTION: SUPPLEMENTS -->
+            <div class="category-showcase">
+                <div class="category-header">
+                    <span class="category-overline">Vitality Collection</span>
+                    <div class="header-flex">
+                        <div class="title-group">
+                            <h2 class="section-title">Supplements</h2>
+                            <div class="section-divider"><span class="section-divider-dot"></span></div>
+                            <p class="section-subtitle">Precision-crafted formulas for strength, nerve support and
+                                metabolic balance.</p>
+                        </div>
+                        <a th:if="${supplementsCat != null}"
+                            th:href="@{'/products/category/' + ${supplementsCat.categoryId}}" class="view-all-link">
+                            Explore <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="product-grid-premium">
+                    <article class="product-card-premium animate-fade-up" th:each="product : ${supplements}"
+                        th:data-product-id="${product.productId}" th:data-name="${product.name}"
+                        th:data-subtitle="${product.subtitle}" th:data-desc="${product.description}"
+                        th:data-price="${product.price}"
+                        th:data-img="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                        th:data-sub-img-1="${product.subImageUrl1}"
+                        th:data-sub-img-2="${product.subImageUrl2}"
+                        th:data-sub-img-3="${product.subImageUrl3}"
+                        th:data-sub-img-4="${product.subImageUrl4}"
+                        th:data-ingredients="${product.ingredients}" th:data-benefits="${product.benefits}"
+                        th:data-usage="${product.usageInstructions}" th:data-warnings="${product.warnings}"
+                        th:data-category="${product.category != null ? product.category.name : ''}"
+                        th:data-skin-type="${product.skinType}"
+                        th:data-hair-type="${product.hairType}"
+                        th:data-stock="${(product.forceSoldOut ?: false) ? 0 : (product.stockQuantity ?: 0)}">
+                        <div class="card-image-wrap">
+                            <div class="card-badges">
+                                <span th:if="${product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                <span th:if="${product.isNew}" class="card-badge new">New</span>
+                                <span th:if="${product.isClassic}" class="card-badge classic">Classic</span>
+                                <!-- Sold Out Tag Removed -->
+                            </div>
+                            <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                th:alt="${product.name}"
+                                th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''">
+                            <div class="card-overlay">
+                                <!-- Minimalist Overlay if needed, or removed -->
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <h3 th:text="${product.name}">Product Name</h3>
+                            <p class="card-desc" th:text="${product.description}" title="Click to view full details">
+                                Description goes here with a longer text to demonstrate the two line clamp...</p>
+                            <div class="card-footer">
+                                <span class="p-price"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                                          style="font-size: 9px; color: #f39c12; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 10px;"></i> Limited
+                                    </span>
+                                    <!-- Sold Out Tag Removed -->
+                                    
+                                    <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="card-add-btn"
+                                        th:onclick="'addToCart(this, ' + ${product.price} + '); return false;'">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                    <span th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                          style="font-size: 11px; color: var(--bold-red); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Sold Out
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- SECTION: WEIGHT LOSS -->
+            <div class="category-showcase">
+                <div class="category-header">
+                    <span class="category-overline">Metabolic Ritual</span>
+                    <div class="header-flex">
+                        <div class="title-group">
+                            <h2 class="section-title">Weight Loss</h2>
+                            <div class="section-divider"><span class="section-divider-dot"></span></div>
+                            <p class="section-subtitle">Botanical blends for metabolic balance and a lighter, more
+                                energised you.</p>
+                        </div>
+                        <a th:if="${weightLossCat != null}"
+                            th:href="@{'/products/category/' + ${weightLossCat.categoryId}}" class="view-all-link">
+                            Explore <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="product-grid-premium">
+                    <article class="product-card-premium animate-fade-up" th:each="product : ${weightLoss}"
+                        th:data-product-id="${product.productId}" th:data-name="${product.name}"
+                        th:data-subtitle="${product.subtitle}" th:data-desc="${product.description}"
+                        th:data-price="${product.price}"
+                        th:data-img="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                        th:data-sub-img-1="${product.subImageUrl1}"
+                        th:data-sub-img-2="${product.subImageUrl2}"
+                        th:data-sub-img-3="${product.subImageUrl3}"
+                        th:data-sub-img-4="${product.subImageUrl4}"
+                        th:data-ingredients="${product.ingredients}" th:data-benefits="${product.benefits}"
+                        th:data-usage="${product.usageInstructions}" th:data-warnings="${product.warnings}"
+                        th:data-category="${product.category != null ? product.category.name : ''}"
+                        th:data-skin-type="${product.skinType}"
+                        th:data-hair-type="${product.hairType}"
+                        th:data-stock="${(product.forceSoldOut ?: false) ? 0 : (product.stockQuantity ?: 0)}">
+                        <div class="card-image-wrap">
+                            <div class="card-badges">
+                                <span th:if="${product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                <span th:if="${product.isNew}" class="card-badge new">New</span>
+                                <span th:if="${product.isClassic}" class="card-badge classic">Classic</span>
+                                <!-- Sold Out Tag Removed -->
+                            </div>
+                            <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                th:alt="${product.name}"
+                                th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''">
+                            <div class="card-overlay">
+                                <!-- Minimalist Overlay if needed, or removed -->
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <h3 th:text="${product.name}">Product Name</h3>
+                            <p class="card-desc" th:text="${product.description}" title="Click to view full details">
+                                Description goes here...</p>
+                            <div class="card-footer">
+                                <span class="p-price"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                                          style="font-size: 9px; color: #f39c12; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 10px;"></i> Limited
+                                    </span>
+                                    <!-- Sold Out Tag Removed -->
+                                    
+                                    <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="card-add-btn"
+                                        th:onclick="'addToCart(this, ' + ${product.price} + '); return false;'">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                    <span th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                          style="font-size: 11px; color: var(--bold-red); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Sold Out
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- SECTION: PAIN RELIEF -->
+            <div class="category-showcase">
+                <div class="category-header">
+                    <span class="category-overline">Healing Formulas</span>
+                    <div class="header-flex">
+                        <div class="title-group">
+                            <h2 class="section-title">Pain Relief</h2>
+                            <div class="section-divider"><span class="section-divider-dot"></span></div>
+                            <p class="section-subtitle">Ancient botanical wisdom — Sanjeevi Oil and Unleash Gel rituals
+                                renewed.</p>
+                        </div>
+                        <a th:if="${painReliefCat != null}"
+                            th:href="@{'/products/category/' + ${painReliefCat.categoryId}}" class="view-all-link">
+                            Explore <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="product-grid-premium">
+                    <article class="product-card-premium animate-fade-up" th:each="product : ${painRelief}"
+                        th:data-product-id="${product.productId}" th:data-name="${product.name}"
+                        th:data-subtitle="${product.subtitle}" th:data-desc="${product.description}"
+                        th:data-price="${product.price}"
+                        th:data-img="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                        th:data-ingredients="${product.ingredients}" th:data-benefits="${product.benefits}"
+                        th:data-usage="${product.usageInstructions}" th:data-warnings="${product.warnings}"
+                        th:data-stock="${(product.forceSoldOut ?: false) ? 0 : (product.stockQuantity ?: 0)}">
+                        <div class="card-image-wrap">
+                            <div class="card-badges">
+                                <span th:if="${product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                <span th:if="${product.isNew}" class="card-badge new">New</span>
+                                <span th:if="${product.isClassic}" class="card-badge classic">Classic</span>
+                                <!-- Sold Out Tag Removed -->
+                            </div>
+                            <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                th:alt="${product.name}"
+                                th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''">
+                            <div class="card-overlay">
+                                <!-- Minimalist Overlay if needed, or removed -->
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <h3 th:text="${product.name}">Product Name</h3>
+                            <p class="card-desc" th:text="${product.description}" title="Click to view full details">
+                                Description goes here...</p>
+                            <div class="card-footer">
+                                <span class="p-price"
+                                    th:text="'₹' + ${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                                          style="font-size: 9px; color: #f39c12; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 10px;"></i> Limited
+                                    </span>
+                                    <!-- Sold Out Tag Removed -->
+                                    
+                                    <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="card-add-btn"
+                                        th:onclick="'addToCart(this, ' + ${product.price} + '); return false;'">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                    <span th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                          style="font-size: 11px; color: var(--bold-red); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Sold Out
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- DYNAMIC CATEGORIES (NEWLY CREATED ONES) -->
+            <th:block th:if="${otherCategoriesMap != null and !otherCategoriesMap.isEmpty()}">
+                <div class="category-showcase" th:each="entry : ${otherCategoriesMap}">
+                    <div class="category-header">
+                        <span class="category-overline" th:text="${entry.key.badgeText != null ? entry.key.badgeText : 'New Collection'}">Collection</span>
+                        <div class="header-flex">
+                            <div class="title-group">
+                                <h2 class="section-title" th:text="${entry.key.name}">Category Name</h2>
+                                <div class="section-divider"><span class="section-divider-dot"></span></div>
+                                <p class="section-subtitle" th:text="${entry.key.description}">Description</p>
+                            </div>
+                            <a th:href="@{'/products/category/' + ${entry.key.categoryId}}" class="view-all-link">
+                                Explore <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="product-grid-premium">
+                        <article class="product-card-premium animate-fade-up" th:each="product : ${entry.value}"
+                            th:data-product-id="${product.productId}" th:data-name="${product.name}"
+                            th:data-subtitle="${product.subtitle}" th:data-desc="${product.description}"
+                            th:data-price="${product.price}"
+                            th:data-img="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                            th:data-sub-img-1="${product.subImageUrl1}"
+                            th:data-sub-img-2="${product.subImageUrl2}"
+                            th:data-sub-img-3="${product.subImageUrl3}"
+                            th:data-sub-img-4="${product.subImageUrl4}"
+                            th:data-ingredients="${product.ingredients}" th:data-benefits="${product.benefits}"
+                            th:data-usage="${product.usageInstructions}" th:data-warnings="${product.warnings}"
+                            th:data-category="${product.category != null ? product.category.name : ''}"
+                            th:data-skin-type="${product.skinType}"
+                            th:data-hair-type="${product.hairType}"
+                            th:data-stock="${(product.forceSoldOut ?: false) ? 0 : (product.stockQuantity ?: 0)}">
+                            <div class="card-image-wrap">
+                                <div class="card-badges">
+                                    <span th:if="${product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                    <span th:if="${product.isNew}" class="card-badge new">New</span>
+                                    <span th:if="${product.isClassic}" class="card-badge classic">Classic</span>
+                                    <!-- Sold Out Tag Removed -->
+                                </div>
+                                <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                    th:alt="${product.name}"
+                                    th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''">
+                            </div>
+                            <div class="card-info">
+                                <h3 th:text="${product.name}">Product Name</h3>
+                                <p class="card-desc" th:text="${product.description}" title="Click to view full details">
+                                    Description goes here...</p>
+                                <div class="card-footer">
+                                    <span class="p-price"
+                                        th:text="'₹' + ${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                                              style="font-size: 9px; color: #f39c12; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                            <i class="bi bi-exclamation-triangle-fill" style="font-size: 10px;"></i> Limited
+                                        </span>
+                                        <!-- Sold Out Tag Removed -->
+                                        
+                                        <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="card-add-btn"
+                                            th:onclick="'addToCart(this, ' + ${product.price} + '); return false;'">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </button>
+                                        <span th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                              style="font-size: 11px; color: var(--bold-red); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            Sold Out
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </th:block>
+
+        </div>
+
+
+        <!-- SIGNATURE STORE SECTION -->
+        <section class="signature-store-section" id="store-experience">
+            <div class="store-grid container">
+                <div class="store-image animate-fade-right">
+                    <img th:src="@{/assets/images/signature-store.png}" alt="Signature Store">
+                </div>
+                <div class="store-content animate-fade-left">
+                    <span class="store-eyebrow">In the Ritual</span>
+                    <h2 class="store-title">Visit a Signature Store of <span class="vegam-luxury">VEGAM</span></h2>
+                    <div class="store-ornament">
+                        <span class="store-ornament-line"></span>
+                        <span class="store-ornament-gem"></span>
+                        <span class="store-ornament-line"
+                            style="background: linear-gradient(90deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.7) 100%);"></span>
+                    </div>
+                    <p class="store-description">
+                        Experience our formulations in person at one of our meticulously designed spaces,
+                        guided by our skincare experts.
+                    </p>
+                    <div class="store-features">
+                        <span class="store-feature-pill"><i class="bi bi-person-check"></i> Expert Guidance</span>
+                        <span class="store-feature-pill"><i class="bi bi-gem"></i> Exclusive Formulations</span>
+                        <span class="store-feature-pill"><i class="bi bi-stars"></i> Bespoke Consultation</span>
+                    </div>
+                    <a th:href="@{/house-of-vegam}" class="vegam-btn">
+                        <span>Find a Store</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT / PHILOSOPHY -->
+        <section class="philosophy-section" id="about">
+            <div class="gold-divider"></div>
+            <h3 class="philosophy-title">Of extraordinary subtlety<br>and efficacy</h3>
+            <p class="philosophy-text">We use both plant-based and laboratory-made ingredients of the highest quality
+                and proven efficacy — in formulations that consider the intricacy of human skin, and our desire to touch
+                it.</p>
+            <a href="javascript:void(0)" class="philosophy-link" id="openStoryModal">Our Story <i
+                    class="bi bi-arrow-right"></i></a>
+        </section>
+
+
+
+
+        <!-- VLOG + COMMUNITY SECTION -->
+        <section class="vlog-community-section" id="vlogSection">
+
+            <!-- Section Header -->
+            <div class="vlog-header animate-fade-up">
+                <div class="gold-divider"></div>
+                <span class="vlog-eyebrow">In the Ritual</span>
+                <h2 class="vlog-title">Visit our comunity Signature </h2>
+                <p class="vlog-subtitle">Experience our thougths and reviews,<br class="hide-mobile"> guided by our
+                    useres .</p>
+
+            </div>
+
+            <!-- Split Layout -->
+            <div class="vlog-split">
+
+                <!-- LEFT: Auto-rotating Vlogs -->
+                <div class="vlog-left">
+                    <div class="vlog-label">
+                        <i class="bi bi-camera-video"></i> Our Vlogs
+                    </div>
+
+                    <!-- Vlog Slides -->
+                    <div class="vlog-slides" id="vlogSlides">
+                        <div th:each="v, iter : ${vlogs}" 
+                             th:class="${iter.index == 0} ? 'vlog-slide active' : 'vlog-slide'">
+                            <div class="vlog-thumb">
+                                <th:block th:if="${v.videoUrl != null and #strings.contains(v.videoUrl, 'youtube.com')}">
+                                    <iframe th:src="${v.videoUrl}" 
+                                            class="vlog-video" 
+                                            style="border: none; width: 100%; height: 100%; object-fit: cover;"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowfullscreen>
+                                    </iframe>
+                                </th:block>
+                                <th:block th:unless="${v.videoUrl != null and #strings.contains(v.videoUrl, 'youtube.com')}">
+                                    <video th:src="${v.videoUrl}" 
+                                           th:poster="${v.posterUrl}"
+                                           controls preload="none" playsinline
+                                           class="vlog-video">
+                                    </video>
+                                    <div class="vlog-play-overlay">
+                                        <button class="vlog-play-btn" aria-label="Play video">
+                                            <i class="bi bi-play-fill"></i>
+                                        </button>
+                                    </div>
+                                </th:block>
+                            </div>
+                            <div class="vlog-info">
+                                <span class="vlog-tag" th:text="${v.tag}">Category</span>
+                                <h4 th:text="${v.title}">Vlog Title</h4>
+                                <p th:text="${v.description}">Description text...</p>
+                                <span class="vlog-meta">
+                                    <i class="bi bi-geo-alt"></i> <span th:text="${v.location}">Location</span> 
+                                    &nbsp;·&nbsp; 
+                                    <i class="bi bi-calendar3"></i> <span th:text="${v.vlogDate}">Date</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vlog Dots -->
+                    <div class="vlog-dots" id="vlogDots">
+                        <button th:each="v, iter : ${vlogs}" 
+                                th:class="${iter.index == 0} ? 'vlog-dot active' : 'vlog-dot'" 
+                                th:data-index="${iter.index}" 
+                                th:attr="aria-label='Vlog ' + ${iter.index + 1}"></button>
+                    </div>
+
+                    <!-- Vlog Prev/Next -->
+                    <div class="vlog-nav">
+                        <button class="vlog-nav-btn" id="vlogPrev" aria-label="Previous"><i
+                                class="bi bi-chevron-left"></i></button>
+                        <span class="vlog-counter" id="vlogCounter">1 / 3</span>
+                        <button class="vlog-nav-btn" id="vlogNext" aria-label="Next"><i
+                                class="bi bi-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Approved User Comments -->
+                <div class="vlog-right">
+                    <div class="vlog-label">
+                        <i class="bi bi-chat-quote"></i> Community Reviews
+                    </div>
+
+                    <div class="comment-slides" id="commentSlides">
+
+                        <div class="comment-slide active">
+                            <div class="comment-card">
+                                <div class="comment-stars">★★★★★</div>
+                                <p class="comment-text">"The Delhi store was an absolute revelation. The staff guided me
+                                    through every product with such expertise — I left with the Resurrection Aromatique
+                                    and haven't looked back."</p>
+                                <div class="comment-author">
+                                    <div class="comment-avatar">P</div>
+                                    <div>
+                                        <span class="comment-name">Priya S.</span>
+                                        <span class="comment-loc"><i class="bi bi-geo-alt-fill"></i> Delhi</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comment-card">
+                                <div class="comment-stars">★★★★★</div>
+                                <p class="comment-text">"Walking into the Mumbai store felt like stepping into another
+                                    world. The scent, the lighting, the attention to detail — truly a luxury
+                                    experience."</p>
+                                <div class="comment-author">
+                                    <div class="comment-avatar">R</div>
+                                    <div>
+                                        <span class="comment-name">Rahul M.</span>
+                                        <span class="comment-loc"><i class="bi bi-geo-alt-fill"></i> Mumbai</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="comment-slide">
+                            <div class="comment-card">
+                                <div class="comment-stars">★★★★★</div>
+                                <p class="comment-text">"Their Bangalore formulation lab tour was eye-opening. You can
+                                    truly feel the care and science that goes into every product. Remarkable brand."</p>
+                                <div class="comment-author">
+                                    <div class="comment-avatar">A</div>
+                                    <div>
+                                        <span class="comment-name">Ananya K.</span>
+                                        <span class="comment-loc"><i class="bi bi-geo-alt-fill"></i> Bangalore</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comment-card">
+                                <div class="comment-stars">★★★★☆</div>
+                                <p class="comment-text">"The skincare ritual demonstration was exactly what I needed. I
+                                    now understand how to layer serums properly. Truly Bare experts are exceptional."
+                                </p>
+                                <div class="comment-author">
+                                    <div class="comment-avatar">S</div>
+                                    <div>
+                                        <span class="comment-name">Sunita V.</span>
+                                        <span class="comment-loc"><i class="bi bi-geo-alt-fill"></i> Chennai</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="comment-slide">
+                            <div class="comment-card">
+                                <div class="comment-stars">★★★★★</div>
+                                <p class="comment-text">"Every visit feels personal. They remember what I bought last
+                                    time and suggest complementary formulations. It's boutique luxury at its finest."
+                                </p>
+                                <div class="comment-author">
+                                    <div class="comment-avatar">N</div>
+                                    <div>
+                                        <span class="comment-name">Nisha P.</span>
+                                        <span class="comment-loc"><i class="bi bi-geo-alt-fill"></i> Pune</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="comment-card">
+                                <div class="comment-stars">★★★★★</div>
+                                <p class="comment-text">"I attended their skincare masterclass. The knowledge shared was
+                                    far beyond what I expected. I left feeling empowered about my skincare choices."</p>
+                                <div class="comment-author">
+                                    <div class="comment-avatar">D</div>
+                                    <div>
+                                        <span class="comment-name">Divya R.</span>
+                                        <span class="comment-loc"><i class="bi bi-geo-alt-fill"></i> Hyderabad</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Comment Nav Dots -->
+                    <div class="vlog-dots comment-dot-wrap" id="commentDots">
+                        <button class="vlog-dot active" data-index="0" aria-label="Reviews 1"></button>
+                        <button class="vlog-dot" data-index="1" aria-label="Reviews 2"></button>
+                        <button class="vlog-dot" data-index="2" aria-label="Reviews 3"></button>
+                    </div>
+
+                    <!-- Submit Comment CTA -->
+                    <div class="comment-cta">
+                        <p>Visited a store? <strong>Share your experience.</strong></p>
+                        <a th:href="@{/review/store}" class="comment-submit-btn">
+                            <i class="bi bi-pencil"></i> Write a Review
+                        </a>
+                        <span class="comment-note"><i class="bi bi-shield-check"></i> All reviews are moderated before
+                            appearing</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="spacer"></div>
+
+    </main>
+
+    <th:block th:replace="~{fragments :: main_footer}"></th:block>
+
+    <!-- STORY MODAL -->
+    <div id="storyModal" class="story-modal">
+        <div class="story-modal-content">
+            <button class="story-modal-close" id="closeStoryModalBtn">&times;</button>
+            <div class="story-header">
+                <span class="story-eyebrow">The Journey</span>
+                <h2 class="story-main-title">Our Story</h2>
+            </div>
+            <div class="timeline-container">
+                <div class="timeline-line"></div>
+
+                <!-- Before 2021 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-info">
+                        <span class="timeline-year">Before 2021</span>
+                        <h3>Natural Origins</h3>
+                        <p>The journey began as a local therapy practice in Gandhipuram, rooted in the wisdom of
+                            natural, oil-based treatments for non-surgical pain relief.</p>
+                    </div>
+                </div>
+
+                <!-- 2021 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-info">
+                        <span class="timeline-year">2021</span>
+                        <h3>Official Genesis</h3>
+                        <p>Transitioning from local practice to a structured clinic, we formally registered to set a new
+                            standard in specialized healthcare.</p>
+                    </div>
+                </div>
+
+                <!-- 2021 - 2023 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-info">
+                        <span class="timeline-year">2021 - 2023</span>
+                        <h3>Brand Identity</h3>
+                        <p>Expansion into a dedicated brand, formulating signature natural remedies and refining our
+                            unique pain relief rituals.</p>
+                    </div>
+                </div>
+
+                <!-- 2023 - 2025 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-info">
+                        <span class="timeline-year">2023 - 2025</span>
+                        <h3>Patient Trust</h3>
+                        <p>Achieving a 4.8/5 reputation, we became the region's trusted destination for chronic pain
+                            management and rehabilitation.</p>
+                    </div>
+                </div>
+
+                <!-- Present -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-info">
+                        <span class="timeline-year">Present</span>
+                        <h3>The Legacy Continues</h3>
+                        <p>Today, we lead in affordable alternative care, bridging traditional wisdom with clinical
+                            therapeutic protocols.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block th:replace="~{fragments :: quick_view_modal}"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script th:src="@{/js/home.js(v=${#dates.createNow().getTime()})}"></script>
+    <script>
+        /* ── Scroll Reveal for Category Sections ── */
+        (function () {
+            const showcases = document.querySelectorAll('.category-showcase');
+            if (!('IntersectionObserver' in window)) {
+                showcases.forEach(el => el.classList.add('visible'));
+                return;
+            }
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, i) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('visible');
+                        }, i * 80);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+            showcases.forEach(el => observer.observe(el));
+        })();
+    </script>
+</body>
+
+</html>

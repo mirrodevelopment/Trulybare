@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Manage Categories')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('categories')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title"><i class="bi bi-tags"></i> Categories</span>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}"><i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}"><i class="bi bi-exclamation-circle-fill"></i> <span th:text="${error}"></span></div>
+
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--navy);">Collection Management</h2>
+                <p style="font-size: 13px; color: var(--text-muted);">Manage your store's categories, headings, and taglines. These cards represent each product collection.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal()">
+                <i class="bi bi-plus-lg"></i> Add Collection
+            </button>
+        </div>
+
+        <div th:if="${categories == null or categories.isEmpty()}" class="empty-state-block">
+            <div class="empty-icon"><i class="bi bi-tags"></i></div>
+            <p class="empty-title">No categories found</p>
+        </div>
+
+        <!-- Category Cards Grid -->
+        <div th:if="${categories != null and !categories.isEmpty()}"
+             style="display:grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap:24px;">
+
+            <div th:each="cat : ${categories}" class="card category-card"
+                 style="transition: transform 0.3s ease, box-shadow 0.3s ease;">
+
+                <!-- Card Header -->
+                <div style="height:120px; background: linear-gradient(135deg,#FDFBF8 0%,#FAFAF8 100%); border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:center; position:relative; border-bottom:1px solid var(--border);">
+                    <div style="text-align:center;">
+                        <span style="display:block; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px;"
+                              th:text="${cat.badgeText != null and !cat.badgeText.isEmpty() ? cat.badgeText : 'TRULY BARE COLLECTION'}">COLLECTION</span>
+                        <h3 style="font-family:'Playfair Display',serif; font-size:24px; color:var(--bold-red); margin:0;"
+                            th:text="${cat.name}">Category Name</h3>
+                    </div>
+                    <div style="position:absolute; top:12px; right:12px;">
+                        <span th:if="${cat.isActive}"   class="badge-status green">● Active</span>
+                        <span th:unless="${cat.isActive}" class="badge-status gray">● Inactive</span>
+                    </div>
+                </div>
+
+                <div class="card-body" style="padding:20px;">
+                    <div style="margin-bottom:20px; height:60px; overflow:hidden;">
+                        <p style="font-size:13px; color:var(--text-muted); line-height:1.6; font-style:italic;"
+                           th:text="${cat.description != null and !cat.description.isEmpty() ? cat.description : 'No description set for this collection.'}">
+                            Description goes here...
+                        </p>
+                    </div>
+
+                    <!-- Stats -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:15px;">
+                        <div style="background:rgba(92,61,46,0.03); border:1px solid var(--border); padding:10px; border-radius:12px; text-align:center;">
+                            <span style="display:block; font-size:9px; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Order</span>
+                            <span style="font-size:18px; font-weight:700; color:var(--navy);"
+                                  th:text="${cat.displayOrder != null ? cat.displayOrder : 0}">0</span>
+                        </div>
+                        <div style="background:rgba(92,61,46,0.03); border:1px solid var(--border); padding:10px; border-radius:12px; text-align:center;">
+                            <span style="display:block; font-size:9px; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Formulations</span>
+                            <span style="font-size:18px; font-weight:700; color:var(--navy);"
+                                  th:text="${cat.products != null ? cat.products.size() : 0}">0</span>
+                        </div>
+                        <div style="background:rgba(92,61,46,0.03); border:1px solid var(--border); padding:10px; border-radius:12px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
+                            <span style="display:block; font-size:9px; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Stock Health</span>
+                            <div th:with="lowCount=${cat.products != null ? cat.products.?[stockQuantity != null and stockQuantity < 10].size() : 0}">
+                                <span th:if="${lowCount > 0}" style="font-size:11px; font-weight:700; color:#e74c3c;">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <span th:text="${lowCount}">0</span> Low
+                                </span>
+                                <span th:if="${lowCount == 0 and (cat.products != null and !cat.products.isEmpty())}"
+                                      style="font-size:11px; font-weight:700; color:#27ae60;">
+                                    <i class="bi bi-check-circle-fill"></i> Accurate
+                                </span>
+                                <span th:if="${cat.products == null or cat.products.isEmpty()}"
+                                      style="font-size:11px; font-weight:700; color:var(--text-muted);">Empty</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons — all data via data-* attributes, no inline JS -->
+                    <div style="display:flex; gap:8px; border-top:1px solid var(--border); margin-top:10px; padding-top:15px; flex-wrap:wrap;">
+
+                        <!-- Edit -->
+                        <button class="btn btn-outline btn-sm edit-cat-btn"
+                                style="flex:1; justify-content:center; font-weight:600; min-width:80px;"
+                                th:data-id="${cat.categoryId}"
+                                th:data-name="${cat.name}"
+                                th:data-desc="${cat.description != null ? cat.description : ''}"
+                                th:data-badge="${cat.badgeText != null ? cat.badgeText : ''}"
+                                th:data-order="${cat.displayOrder != null ? cat.displayOrder : 0}">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </button>
+
+                        <!-- Toggle -->
+                        <button th:if="${cat.isActive}"
+                                class="btn btn-sm btn-action-warn toggle-cat-btn"
+                                style="flex:1; justify-content:center; font-weight:600; min-width:110px;"
+                                th:data-id="${cat.categoryId}"
+                                th:data-name="${cat.name}"
+                                data-activating="false">
+                            <i class="bi bi-toggle-on"></i> Deactivate
+                        </button>
+                        <button th:unless="${cat.isActive}"
+                                class="btn btn-sm btn-action-success toggle-cat-btn"
+                                style="flex:1; justify-content:center; font-weight:600; min-width:110px;"
+                                th:data-id="${cat.categoryId}"
+                                th:data-name="${cat.name}"
+                                data-activating="true">
+                            <i class="bi bi-toggle-off"></i> Activate
+                        </button>
+
+                        <!-- Delete -->
+                        <button class="btn btn-sm btn-action-danger delete-cat-btn"
+                                style="justify-content:center; font-weight:600; padding:0 14px;"
+                                th:data-id="${cat.categoryId}"
+                                th:data-name="${cat.name}"
+                                th:data-count="${cat.products != null ? cat.products.size() : 0}">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════ Edit / Add Modal ════════ -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">Edit Collection Details</h3>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form th:action="@{/admin/categories/save}" method="post">
+            <input type="hidden" id="editCategoryId" name="categoryId">
+
+            <div class="form-group" style="margin-bottom:20px;">
+                <label>Header Badge Text</label>
+                <input type="text" id="editCategoryBadge" name="badgeText" placeholder="e.g. VITALITY COLLECTION">
+                <small style="font-size:10px; color:var(--text-muted);">The small uppercase text above the main heading.</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px;">
+                <label>Main Category Name</label>
+                <input type="text" id="editCategoryName" name="name" required>
+                <small id="editCategoryNameHint" style="font-size:10px; color:var(--text-muted);">The category name.</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px;">
+                <label>Display Order</label>
+                <input type="number" id="editCategoryOrder" name="displayOrder" value="0" min="0" th:max="${categories != null ? categories.size() : 1}">
+                <small style="font-size:10px; color:var(--text-muted);" th:text="'Lower numbers appear first (Max: ' + ${categories != null ? categories.size() : 1} + ').'">Lower numbers appear first.</small>
+            </div>
+
+            <div class="form-group">
+                <label>Description / Tagline</label>
+                <textarea id="editCategoryDescription" name="description" rows="4"
+                          placeholder="Precision-crafted formulas for strength..."></textarea>
+                <small style="font-size:10px; color:var(--text-muted);">Displayed on the collection page.</small>
+            </div>
+
+            <div class="gold-rule"></div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ════════ Confirm Modal ════════ -->
+<div id="tbConfirmModal" class="modal-overlay">
+    <div class="modal-box tb-confirm-box">
+        <div class="tb-confirm-icon-wrap" id="tbConfirmIconWrap">
+            <i id="tbConfirmIcon"></i>
+        </div>
+        <h3 id="tbConfirmTitle"
+            style="font-family:'Playfair Display',serif; font-size:1.25rem; color:var(--navy); margin:0 0 8px;"></h3>
+        <p id="tbConfirmMessage"
+           style="font-size:13px; color:var(--text-muted); margin:0 0 24px; line-height:1.6;"></p>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn btn-outline" onclick="closeTbConfirm()">Cancel</button>
+            <button id="tbConfirmBtn" class="btn btn-primary">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden POST forms — Thymeleaf injects CSRF token at render time -->
+<form id="deleteForm" method="post" style="display:none;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+</form>
+<form id="toggleForm" method="post" style="display:none;">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+</form>
+
+<style>
+    .category-card:hover { transform:translateY(-5px); box-shadow:0 12px 24px rgba(0,0,0,0.08); }
+    .badge-status.green { background:rgba(46,204,113,0.1); color:#27ae60; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:600; }
+    .badge-status.gray  { background:rgba(149,165,166,0.1); color:#7f8c8d; padding:4px 10px; border-radius:20px; font-size:10px; font-weight:600; }
+
+    .btn-action-danger  { background:rgba(231,76,60,0.08);  color:#e74c3c; border:1px solid rgba(231,76,60,0.25); }
+    .btn-action-danger:hover  { background:#e74c3c; color:#fff; }
+    .btn-action-warn    { background:rgba(243,156,18,0.08); color:#d68910; border:1px solid rgba(243,156,18,0.30); }
+    .btn-action-warn:hover    { background:#e67e22; color:#fff; }
+    .btn-action-success { background:rgba(46,204,113,0.08); color:#27ae60; border:1px solid rgba(46,204,113,0.30); }
+    .btn-action-success:hover { background:#27ae60; color:#fff; }
+
+    .tb-confirm-box { max-width:420px; text-align:center; padding:40px 36px 32px; }
+    .tb-confirm-icon-wrap { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:28px; }
+    .tb-confirm-icon-wrap.danger  { background:rgba(231,76,60,0.1);  color:#e74c3c; }
+    .tb-confirm-icon-wrap.warn    { background:rgba(243,156,18,0.1); color:#d68910; }
+    .tb-confirm-icon-wrap.success { background:rgba(46,204,113,0.1); color:#27ae60; }
+    #tbConfirmBtn.danger  { background:#e74c3c; border-color:#e74c3c; }
+    #tbConfirmBtn.warn    { background:#e67e22; border-color:#e67e22; }
+    #tbConfirmBtn.success { background:#27ae60; border-color:#27ae60; }
+</style>
+
+<script>
+/* ── CSRF token from meta (Spring Security) ── */
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="_csrf"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+function getCsrfHeader() {
+    const meta = document.querySelector('meta[name="_csrf_header"]');
+    return meta ? meta.getAttribute('content') : '_csrf';
+}
+
+/* ── Edit modal ── */
+function openAddModal() {
+    document.getElementById('modalTitle').innerText = 'Add New Collection';
+    document.getElementById('editCategoryId').value = '';
+    const n = document.getElementById('editCategoryName');
+    n.value = ''; n.readOnly = false; n.style.background = '#fff'; n.style.cursor = 'text';
+    document.getElementById('editCategoryNameHint').innerText = 'Choose a short, unique name for the collection.';
+    document.getElementById('editCategoryDescription').value = '';
+    document.getElementById('editCategoryBadge').value = '';
+    document.getElementById('editCategoryOrder').value = '0';
+    document.getElementById('editModal').classList.add('open');
+}
+function openEditModal(id, name, desc, badge, order) {
+    document.getElementById('modalTitle').innerText = 'Edit Collection Details';
+    document.getElementById('editCategoryId').value = id;
+    const n = document.getElementById('editCategoryName');
+    n.value = name; n.readOnly = true; n.style.background = '#f8f9fa'; n.style.cursor = 'not-allowed';
+    document.getElementById('editCategoryNameHint').innerText = 'The category name is locked to maintain navigation stability.';
+    document.getElementById('editCategoryDescription').value = desc;
+    document.getElementById('editCategoryBadge').value = badge || '';
+    document.getElementById('editCategoryOrder').value = order || '0';
+    document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
+
+/* ── Confirm modal ── */
+let _pendingAction = null;
+
+function openTbConfirm(type, iconClass, title, message, btnLabel, action) {
+    const wrap = document.getElementById('tbConfirmIconWrap');
+    const icon = document.getElementById('tbConfirmIcon');
+    const btn  = document.getElementById('tbConfirmBtn');
+    wrap.className = 'tb-confirm-icon-wrap ' + type;
+    icon.className = iconClass;
+    btn.className  = 'btn btn-primary ' + type;
+    document.getElementById('tbConfirmTitle').innerText   = title;
+    document.getElementById('tbConfirmMessage').innerText = message;
+    btn.innerText = btnLabel;
+    _pendingAction = action;
+    document.getElementById('tbConfirmModal').classList.add('open');
+}
+function closeTbConfirm() {
+    document.getElementById('tbConfirmModal').classList.remove('open');
+    _pendingAction = null;
+}
+document.getElementById('tbConfirmBtn').addEventListener('click', function() {
+    if (_pendingAction) _pendingAction();
+    closeTbConfirm();
+});
+document.getElementById('tbConfirmModal').addEventListener('click', function(e) {
+    if (e.target === this) closeTbConfirm();
+});
+
+/* ── Submit helper — CSRF already in form via Thymeleaf ── */
+function submitForm(formId, action) {
+    const form = document.getElementById(formId);
+    form.action = action;
+    form.submit();
+}
+
+/* ── Wire up buttons after DOM loads ── */
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* Edit */
+    document.querySelectorAll('.edit-cat-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            openEditModal(
+                this.dataset.id,
+                this.dataset.name,
+                this.dataset.desc,
+                this.dataset.badge,
+                this.dataset.order
+            );
+        });
+    });
+
+    /* Toggle activate / deactivate */
+    document.querySelectorAll('.toggle-cat-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id         = this.dataset.id;
+            var name       = this.dataset.name;
+            var activating = this.dataset.activating === 'true';
+            if (activating) {
+                openTbConfirm(
+                    'success', 'bi bi-toggle-on',
+                    'Activate Collection?',
+                    '"' + name + '" will become visible to customers on the storefront.',
+                    'Yes, Activate',
+                    function() { submitForm('toggleForm', '/admin/categories/toggle/' + id); }
+                );
+            } else {
+                openTbConfirm(
+                    'warn', 'bi bi-toggle-off',
+                    'Deactivate Collection?',
+                    '"' + name + '" will be hidden from customers. Products within will still exist but the category won\'t appear in the store.',
+                    'Yes, Deactivate',
+                    function() { submitForm('toggleForm', '/admin/categories/toggle/' + id); }
+                );
+            }
+        });
+    });
+
+    /* Delete */
+    document.querySelectorAll('.delete-cat-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id    = this.dataset.id;
+            var name  = this.dataset.name;
+            var count = parseInt(this.dataset.count, 10) || 0;
+            if (count > 0) {
+                openTbConfirm(
+                    'danger', 'bi bi-x-circle-fill',
+                    'Cannot Delete Collection',
+                    '"' + name + '" still has ' + count + ' product(s) assigned. Reassign or remove them first.',
+                    'Understood',
+                    null
+                );
+                return;
+            }
+            openTbConfirm(
+                'danger', 'bi bi-trash3-fill',
+                'Delete Collection?',
+                'You are about to permanently delete "' + name + '". This action cannot be undone.',
+                'Yes, Delete',
+                function() { submitForm('deleteForm', '/admin/categories/delete/' + id); }
+            );
+        });
+    });
+
+    /* Close edit modal on overlay click */
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+});
+</script>
+
+</body>
+</html>

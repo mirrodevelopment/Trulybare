@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Vlog Management')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('vlogs')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title"><i class="bi bi-camera-video"></i> Vlog Management</span>
+        <div class="admin-badge">
+            <img th:src="@{/assets/images/logo.png}" class="admin-avatar" alt="Admin">
+            <span>Administrator</span>
+        </div>
+    </div>
+
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+            <h1 class="page-title">Vlog Management</h1>
+            <p style="font-size: 13px; color: var(--text-muted);">Manage the video stories and community content on your homepage.</p>
+        </div>
+        <a th:href="@{/admin/vlogs/new}" class="btn-primary" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+            <i class="bi bi-plus-lg"></i> Add New Vlog
+        </a>
+    </div>
+
+    <div class="flash-success" th:if="${success}"><i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span></div>
+    <div class="flash-error"   th:if="${error}"><i class="bi bi-exclamation-circle-fill"></i> <span th:text="${error}"></span></div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2><i class="bi bi-collection-play"></i> Active Vlogs</h2>
+            <span style="font-size: 12px; color: var(--text-muted);" th:text="${vlogs.size() + ' Total'}">0 Total</span>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div th:if="${vlogs.isEmpty()}" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                <i class="bi bi-camera-video" style="font-size: 40px; display: block; margin-bottom: 12px; opacity: 0.3;"></i>
+                No vlogs found. Click "Add New Vlog" to get started.
+            </div>
+            
+            <table th:if="${!vlogs.isEmpty()}" style="width: 100%; border-collapse: collapse;">
+                <thead style="background: var(--pale-white); border-bottom: 1px solid var(--border);">
+                    <tr>
+                        <th style="padding: 14px 20px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Order</th>
+                        <th style="padding: 14px 20px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Preview</th>
+                        <th style="padding: 14px 20px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Vlog Details</th>
+                        <th style="padding: 14px 20px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Status</th>
+                        <th style="padding: 14px 20px; text-align: right; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="v : ${vlogs}" style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='rgba(201,168,76,0.03)'" onmouseout="this.style.background='transparent'">
+                        <td style="padding: 16px 20px; font-weight: 600; color: var(--garnet);" th:text="${v.displayOrder}">0</td>
+                        <td style="padding: 16px 20px;">
+                            <div style="width: 120px; height: 68px; border-radius: 8px; overflow: hidden; position: relative; background: #000; border: 1px solid var(--border);">
+                                <img th:src="${v.posterUrl}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.8;">
+                                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                                    <i class="bi bi-play-fill" style="font-size: 20px;"></i>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 16px 20px;">
+                            <div style="font-weight: 600; color: var(--navy); margin-bottom: 4px;" th:text="${v.title}">Vlog Title</div>
+                            <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+                                <span style="color: var(--garnet); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" th:text="${v.tag}">Tag</span>
+                                <span>&bull;</span>
+                                <span th:text="${v.location}">Location</span>
+                                <span>&bull;</span>
+                                <span th:text="${v.vlogDate}">Date</span>
+                            </div>
+                        </td>
+                        <td style="padding: 16px 20px;">
+                            <span th:if="${v.isActive}" class="status-badge" style="background: #e8f5e9; color: #2e7d32;">Active</span>
+                            <span th:if="${!v.isActive}" class="status-badge" style="background: #f5f5f5; color: #757575;">Draft</span>
+                        </td>
+                        <td style="padding: 16px 20px; text-align: right;">
+                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                                <a th:href="@{'/admin/vlogs/edit/' + ${v.vlogId}}" class="btn-action" title="Edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form th:action="@{'/admin/vlogs/delete/' + ${v.vlogId}}" method="post" style="display: inline;" 
+                                      th:onsubmit="return confirm('Are you sure you want to delete this vlog? This action cannot be undone.')">
+                                    <button type="submit" class="btn-action-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

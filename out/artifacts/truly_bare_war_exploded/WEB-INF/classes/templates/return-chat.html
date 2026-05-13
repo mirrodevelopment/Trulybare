@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Return Chat | Truly Bare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <style>
+        :root {
+            --cream: #FAF8F5;
+            --gold: #C9A84C;
+            --dark: #1c1c1c;
+            --muted: #9C8875;
+            --red: #8B1A1A;
+            --border: rgba(201,168,76,0.2);
+        }
+        body { background: var(--cream); }
+
+        .chat-wrapper {
+            max-width: 720px;
+            margin: 0 auto;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        /* Header */
+        .chat-header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .chat-back {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .chat-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #C9A84C, #8B1A1A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .chat-info { flex: 1; min-width: 0; }
+        .chat-title { font-size: 15px; font-weight: 700; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-subtitle { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            flex-shrink: 0;
+        }
+        .status-pill.pending { background: #fef3c7; color: #92400e; }
+        .status-pill.approved { background: #d1fae5; color: #065f46; }
+        .status-pill.rejected { background: #fee2e2; color: #991b1b; }
+        .status-pill.refund { background: #dbeafe; color: #1e40af; }
+        .status-pill.completed { background: #d1fae5; color: #065f46; }
+        .status-pill.processing { background: #ede9fe; color: #5b21b6; }
+
+        /* Info bar */
+        .return-info-bar {
+            background: rgba(201,168,76,0.08);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .info-item { font-size: 11px; color: var(--muted); }
+        .info-item strong { color: var(--dark); }
+
+        /* Chat area */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--cream); /* Brand Cream */
+            background-image: url("/assets/images/logo.png");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 280px;
+            background-blend-mode: multiply; /* Subtle watermark */
+            background-attachment: local;
+        }
+
+        .msg-row { 
+            display: flex; 
+            flex-direction: column; 
+            max-width: 85%; 
+            position: relative;
+            margin-bottom: 4px;
+        }
+        .msg-row.user { align-self: flex-end; }
+        .msg-row.admin { align-self: flex-start; }
+
+        .msg-bubble {
+            padding: 8px 12px 18px; 
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.45;
+            position: relative;
+            word-break: break-word;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Bubble Tails */
+        .msg-row.user .msg-bubble::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: -8px;
+            width: 12px;
+            height: 14px;
+            background: var(--red); /* Garnet */
+            clip-path: polygon(0 0, 0 100%, 100% 0);
+        }
+        .msg-row.admin .msg-bubble::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -8px;
+            width: 12px;
+            height: 14px;
+            background: #fff;
+            clip-path: polygon(100% 0, 100% 100%, 0 0);
+        }
+
+        .msg-row.user .msg-bubble {
+            background: var(--red); /* Garnet */
+            color: #fff;
+            border-top-right-radius: 0;
+        }
+        .msg-row.admin .msg-bubble {
+            background: #fff;
+            color: var(--dark);
+            border-top-left-radius: 0;
+            border: 1px solid var(--border);
+        }
+
+        .msg-attachment {
+            max-width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .msg-attachment img { width: 100%; display: block; }
+
+        .msg-time { 
+            font-size: 10px; 
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            white-space: nowrap;
+        }
+        .msg-row.user .msg-time { color: rgba(255,255,255,0.7); }
+        .msg-row.admin .msg-time { color: var(--muted); }
+        
+        .msg-sender { 
+            font-size: 11px; 
+            font-weight: 700; 
+            color: var(--gold); /* Gold */
+            margin-bottom: 2px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-date-divider {
+            text-align: center;
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            align-self: center;
+            margin: 16px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .closed-notice {
+            text-align: center;
+            padding: 10px 16px;
+            background: #fff;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #54656f;
+            align-self: center;
+            margin: 16px 0;
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+            border-left: 4px solid #f44336;
+        }
+
+        /* Input */
+        .chat-input-bar {
+            background: #f0f2f5;
+            padding: 10px 16px;
+            flex-shrink: 0;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .chat-input-wrap {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            padding: 9px 12px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        }
+        .chat-input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 15px;
+            outline: none;
+            font-family: inherit;
+            color: #111b21;
+            resize: none;
+            max-height: 120px;
+            padding: 0;
+        }
+        .attach-btn {
+            background: none;
+            border: none;
+            color: #54656f;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+        }
+        .attach-btn:hover { color: #111b21; }
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            color: #54656f;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .send-btn:hover { color: #008069; } /* WhatsApp Green */
+        .attach-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #54656f;
+            padding: 6px 10px;
+            background: #fff;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        }
+        .attach-remove {
+            background: none;
+            border: none;
+            color: #f44336;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: auto;
+        }
+        #attachInput { display: none; }
+
+        /* Images in chat */
+        .chat-img-thumb {
+            max-width: 180px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .chat-img-thumb:hover { opacity: 0.85; }
+
+        /* Return status timeline */
+        .status-timeline {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin: 0 20px 16px;
+            flex-shrink: 0;
+        }
+        .timeline-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+        .timeline-steps { display: flex; gap: 0; overflow-x: auto; }
+        .timeline-step { flex: 1; text-align: center; position: relative; min-width: 70px; }
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+        .timeline-step:last-child::before { display: none; }
+        .step-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            margin: 0 auto 6px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.3s ease;
+        }
+        .step-dot.active { background: var(--gold); color: #fff; }
+        .step-dot.done { background: #22c55e; color: #fff; }
+        .step-dot.failed { background: var(--red); color: #fff; }
+        .step-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        @media (max-width: 600px) {
+            .chat-wrapper { max-width: 100%; }
+            .status-timeline { margin: 0 10px 12px; }
+            .msg-row { max-width: 85%; }
+        }
+    </style>
+</head>
+<body>
+<div class="chat-wrapper">
+
+    <!-- Header -->
+    <div class="chat-header">
+        <a th:href="@{/order-history}" class="chat-back"><i class="bi bi-arrow-left"></i> Back</a>
+        <div class="chat-avatar">🌿</div>
+        <div class="chat-info">
+            <div class="chat-title">
+                RET-<span th:text="${#numbers.formatInteger(returnRequest.id, 3)}">001</span>
+                · <span th:text="${returnRequest.returnType == 'REPLACEMENT' ? 'Replacement' : 'Return & Refund'}">Return</span>
+            </div>
+            <div class="chat-subtitle" th:text="${returnRequest.order.orderNumber}">TB-ORD-0000</div>
+        </div>
+        <!-- Status pill -->
+        <span th:with="s=${returnRequest.status.name()}"
+              th:class="${s.contains('PENDING') ? 'status-pill pending' :
+                          s == 'APPROVED' ? 'status-pill approved' :
+                          s == 'REJECTED' ? 'status-pill rejected' :
+                          s.contains('REFUND') ? 'status-pill refund' :
+                          s == 'COMPLETED' ? 'status-pill completed' :
+                          s.contains('REPLACEMENT') ? 'status-pill processing' : 'status-pill pending'}"
+              th:text="${returnRequest.status.name().replace('_', ' ')}">PENDING</span>
+    </div>
+
+    <!-- Info Bar -->
+    <div class="return-info-bar">
+        <div class="info-item">Reason: <strong th:text="${returnRequest.reason}">—</strong></div>
+        <div class="info-item">Product: <strong th:text="${returnRequest.productName != null ? returnRequest.productName : 'Your Order'}">—</strong></div>
+        <div th:if="${returnRequest.refundAmount != null}" class="info-item">
+            Refund: <strong th:text="'₹' + ${returnRequest.refundAmount}">—</strong>
+        </div>
+        <div class="info-item">Raised: <strong th:text="${#temporals.format(returnRequest.createdAt, 'dd MMM yyyy')}">—</strong></div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="status-timeline">
+        <div class="timeline-title">Request Journey</div>
+        <div class="timeline-steps">
+            <th:block th:with="s=${returnRequest.status.name()}">
+                <div class="timeline-step">
+                    <div th:class="${'step-dot done'}"><i class="bi bi-check"></i></div>
+                    <div class="step-label">Submitted</div>
+                </div>
+                <div class="timeline-step">
+                    <div th:class="${s == 'UNDER_REVIEW' or s == 'APPROVED' or s == 'REJECTED' or s.contains('REFUND') or s.contains('REPLACEMENT') or s == 'COMPLETED' ? 'step-dot done' : 'step-dot'}">
+                        <i class="bi bi-eye"></i></div>
+                    <div class="step-label">Reviewed</div>
+                </div>
+                <div class="timeline-step">
+                    <div th:class="${s == 'APPROVED' or s.contains('REFUND') or s.contains('REPLACEMENT') or s == 'COMPLETED' ? 'step-dot done' : s == 'REJECTED' ? 'step-dot failed' : 'step-dot'}">
+                        <i th:class="${s == 'REJECTED' ? 'bi bi-x' : 'bi bi-check'}"></i></div>
+                    <div th:text="${s == 'REJECTED' ? 'Rejected' : 'Approved'}" class="step-label">Approved</div>
+                </div>
+                <div class="timeline-step">
+                    <div th:class="${s == 'REFUND_INITIATED' ? 'step-dot active' : s == 'REFUND_COMPLETED' or s == 'REPLACEMENT_PROCESSING' or s == 'COMPLETED' ? 'step-dot done' : s == 'REFUND_FAILED' ? 'step-dot failed' : 'step-dot'}">
+                        <i class="bi bi-arrow-repeat"></i></div>
+                    <div class="step-label">Processing</div>
+                </div>
+                <div class="timeline-step">
+                    <div th:class="${s == 'COMPLETED' or s == 'REFUND_COMPLETED' ? 'step-dot done' : 'step-dot'}">
+                        <i class="bi bi-check2-all"></i></div>
+                    <div class="step-label">Done</div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chatMessages">
+
+        <!-- Return images if any -->
+        <th:block th:if="${returnRequest.images != null and !returnRequest.images.isEmpty()}">
+            <div class="chat-date-divider">📸 Proof Images Submitted</div>
+            <div class="msg-row user">
+                <div class="msg-bubble">
+                    <div style="font-size:12px;margin-bottom:6px;opacity:0.85;">I've attached proof images:</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        <img th:each="img : ${returnRequest.images}"
+                             th:src="${img.imageUrl}"
+                             class="chat-img-thumb"
+                             onclick="openImage(this.src)"
+                             onerror="this.style.display='none'">
+                    </div>
+                </div>
+            </div>
+        </th:block>
+
+        <!-- Description if any -->
+        <th:block th:if="${returnRequest.description != null and !returnRequest.description.isBlank()}">
+            <div class="msg-row user">
+                <div class="msg-bubble">
+                    <span th:text="${returnRequest.description}"></span>
+                    <div class="msg-time" th:text="${#temporals.format(returnRequest.createdAt, 'hh:mm a')}"></div>
+                </div>
+            </div>
+        </th:block>
+
+        <!-- Chat Messages -->
+        <th:block th:each="msg : ${returnRequest.messages}">
+            <div th:class="${msg.senderType == 'USER' ? 'msg-row user' : 'msg-row admin'}">
+                <div class="msg-bubble">
+                    <span class="msg-sender" th:if="${msg.senderType == 'ADMIN'}" th:text="${msg.senderName}">Support</span>
+                    <th:block th:if="${msg.message != null and !msg.message.isBlank()}" th:text="${msg.message}"></th:block>
+                    <th:block th:if="${msg.attachmentUrl != null}">
+                        <img th:src="${msg.attachmentUrl}" class="chat-img-thumb" onclick="openImage(this.src)"
+                             style="margin-top:6px;" onerror="this.style.display='none'">
+                    </th:block>
+                    <div class="msg-time" th:text="${#temporals.format(msg.createdAt, 'hh:mm a')}">Time</div>
+                </div>
+            </div>
+        </th:block>
+
+        <!-- Closed notice -->
+        <div th:if="${!returnRequest.chatOpen}" class="closed-notice">
+            🔒 This support chat has been closed. For further assistance, email support@trulybare.com
+        </div>
+    </div>
+
+    <!-- Chat Input -->
+    <form class="chat-input-bar" th:action="@{'/return/chat/' + ${returnRequest.id} + '/send'}"
+          method="post" enctype="multipart/form-data" id="chatForm"
+          th:if="${returnRequest.chatOpen}">
+        <div id="attachPreview" class="attach-preview" style="display:none;">
+            <i class="bi bi-image"></i>
+            <span id="attachName">file.jpg</span>
+            <button type="button" class="attach-remove" onclick="clearAttach()">×</button>
+        </div>
+        <div class="chat-input-row">
+            <div class="chat-input-wrap">
+                <textarea class="chat-input" name="message" id="msgInput"
+                          placeholder="Type a message…" rows="1"
+                          onkeydown="handleEnter(event)"></textarea>
+                <label for="attachInput" class="attach-btn" title="Attach image">
+                    <i class="bi bi-paperclip"></i>
+                </label>
+                <input type="file" id="attachInput" name="attachment" accept="image/*" onchange="showAttach(this)">
+            </div>
+            <button type="submit" class="send-btn">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+    </form>
+
+    <!-- Closed input placeholder -->
+    <div class="chat-input-bar" th:if="${!returnRequest.chatOpen}"
+         style="text-align:center;color:var(--muted);font-size:12px;padding:14px;">
+        <i class="bi bi-lock"></i> Chat closed
+    </div>
+</div>
+
+<!-- Image lightbox -->
+<div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;">
+    <img id="lightboxImg" style="max-width:90vw;max-height:90vh;border-radius:12px;">
+</div>
+
+<script>
+    // Auto scroll to bottom
+    const msgs = document.getElementById('chatMessages');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+
+    // Auto-grow textarea
+    const input = document.getElementById('msgInput');
+    if (input) {
+        input.addEventListener('input', () => {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+        });
+    }
+
+    function handleEnter(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('chatForm').submit();
+        }
+    }
+
+    function showAttach(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('attachName').textContent = input.files[0].name;
+            document.getElementById('attachPreview').style.display = 'flex';
+            document.getElementById('msgInput').required = false;
+        }
+    }
+
+    function clearAttach() {
+        document.getElementById('attachInput').value = '';
+        document.getElementById('attachPreview').style.display = 'none';
+        document.getElementById('msgInput').required = true;
+    }
+
+    function openImage(src) {
+        const lb = document.getElementById('lightbox');
+        document.getElementById('lightboxImg').src = src;
+        lb.style.display = 'flex';
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+</script>
+</body>
+</html>

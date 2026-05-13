@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Activity Log')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('activity-log')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title">🔍 Admin Activity Log</span>
+    </div>
+
+    <div class="content-area">
+        
+        <!-- Date Picker -->
+        <div class="card" style="margin-bottom:24px;">
+            <div class="card-body" style="padding:16px 20px;">
+                <form th:action="@{/admin/activity-log}" method="get" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                    <label style="font-size:14px; font-weight:500; color:var(--text-muted);">📅 Filter by Date</label>
+                    <input type="date" name="date" th:value="${queryDate}"
+                           style="background:rgba(250,248,245,0.8); border:1px solid var(--border); border-radius:8px; color:var(--text-dark); padding:9px 13px; font-size:14px; font-family:inherit; outline:none;"/>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a th:href="@{/admin/activity-log}" class="btn btn-outline">Clear</a>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Important Actions (<span th:text="${logs != null ? logs.size() : 0}">0</span>)</h2>
+                <p style="font-size:12px;color:var(--text-muted);font-weight:400;margin-top:4px;">Excludes individual chat messages</p>
+            </div>
+
+            <div th:if="${logs == null or logs.isEmpty()}" style="padding:60px;text-align:center;color:var(--text-muted);">
+                <div style="font-size:40px;margin-bottom:12px;">📋</div>
+                No major activity logged yet.
+            </div>
+
+            <table th:if="${logs != null and !logs.isEmpty()}" style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead>
+                    <tr style="background:var(--surface);font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">
+                        <th style="padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);">Time</th>
+                        <th style="padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);">Admin</th>
+                        <th style="padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);">Action</th>
+                        <th style="padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);">Description</th>
+                        <th style="padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="log, iStat : ${logs}"
+                        th:style="${iStat.odd} ? 'background:rgba(250,248,245,0.5);' : ''"
+                        style="border-bottom:1px solid var(--border);">
+                        
+                        <td style="padding:12px 16px;white-space:nowrap;color:var(--text-muted);"
+                            th:text="${log.createdAt != null ? #temporals.format(log.createdAt,'dd MMM · HH:mm') : '—'}"></td>
+                        
+                        <td style="padding:12px 16px;font-weight:600;" th:text="${log.adminName != null ? log.adminName : 'System'}"></td>
+                        
+                        <td style="padding:12px 16px;">
+                            <span th:if="${log.actionType != null}"
+                                  th:with="a=${log.actionType}"
+                                  th:class="${a == 'REJECTION' ? 'badge-status red' : 
+                                              a == 'REPLACEMENT_APPROVED' ? 'badge-status green' : 
+                                              a.contains('REFUND') ? 'badge-status blue' : 
+                                              'badge-status yellow'}"
+                                  th:text="${a.replace('_',' ')}"></span>
+                        </td>
+                        
+                        <td style="padding:12px 16px;color:var(--text-medium);max-width:280px;" th:text="${log.description}"></td>
+                        
+                        <td style="padding:12px 16px;">
+                            <div th:if="${log.targetType == 'RETURN_REQUEST' and log.targetId != null}">
+                                <a th:href="@{'/admin/returns/' + ${log.targetId}}" 
+                                   style="color:var(--bark);font-family:monospace;font-size:12px;text-decoration:none;border-bottom:1px dotted;"
+                                   th:text="'RET-' + ${log.targetId}"></a>
+                            </div>
+                            <div th:if="${log.newValue != null}" style="font-size:10px;margin-top:4px;">
+                                <span th:if="${log.oldValue != null}" th:text="${log.oldValue + ' → '}"></span>
+                                <strong th:text="${log.newValue}"></strong>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

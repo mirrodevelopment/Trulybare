@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Reviews')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('reviews')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title">⭐ Customer Reviews</span>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}">✅ <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}">  ❌ <span th:text="${error}"></span></div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <a th:href="@{/admin/reviews}"                    th:class="${activeStatus == null}      ? 'filter-tab active' : 'filter-tab'">All Reviews</a>
+            <a th:href="@{/admin/reviews(status='PENDING')}"  th:class="${activeStatus == 'PENDING'} ? 'filter-tab active' : 'filter-tab'">
+                ⏳ Waiting for Approval
+                <span th:if="${pendingCount > 0}" style="background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;" th:text="${pendingCount}"></span>
+            </a>
+            <a th:href="@{/admin/reviews(status='APPROVED')}" th:class="${activeStatus == 'APPROVED'}? 'filter-tab active' : 'filter-tab'">✅ Approved</a>
+            <a th:href="@{/admin/reviews(status='REJECTED')}" th:class="${activeStatus == 'REJECTED'}? 'filter-tab active' : 'filter-tab'">❌ Rejected</a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Reviews (<span th:text="${reviews.size()}">0</span>)</h2>
+            </div>
+
+            <div th:if="${reviews.isEmpty()}" style="padding:40px; text-align:center; color:var(--text-muted);">
+                No reviews in this category.
+            </div>
+
+            <div th:if="${!reviews.isEmpty()}" style="overflow-x:auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Rating</th>
+                            <th>Review</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${reviews}">
+                            <td>
+                                <div th:text="${r.user.fullName}" style="font-weight:500;"></div>
+                                <div th:text="${r.user.email}" style="font-size:12px; color:var(--text-muted);"></div>
+                                <span th:if="${r.isVerifiedPurchase}" style="font-size:10px; color:var(--green); font-weight:600;">✔ Verified Purchase</span>
+                            </td>
+                            <td th:text="${r.product.name}" class="muted"></td>
+                            <td>
+                                <div style="color:#f59e0b; font-size:14px; letter-spacing:1px;">
+                                    <span th:each="i : ${#numbers.sequence(1, r.rating)}">★</span>
+                                    <span th:each="i : ${#numbers.sequence(r.rating + 1, 5)}" style="color:var(--text-muted);">★</span>
+                                </div>
+                                <div style="font-size:11px; color:var(--text-muted);" th:text="${r.rating} + '/5'"></div>
+                            </td>
+                            <td style="max-width:250px;">
+                                <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" th:text="${r.comment}"></div>
+                            </td>
+                            <td>
+                                <span th:switch="${r.reviewStatus.name()}">
+                                    <span th:case="'PENDING'"  class="badge-status yellow">⏳ Waiting</span>
+                                    <span th:case="'APPROVED'" class="badge-status green">✅ Approved</span>
+                                    <span th:case="'REJECTED'" class="badge-status red">❌ Rejected</span>
+                                </span>
+                            </td>
+                            <td class="muted" th:text="${#temporals.format(r.createdAt, 'dd MMM yyyy')}"></td>
+                            <td>
+                                <div style="display:flex; flex-direction:column; gap:5px;">
+                                    <form th:if="${r.reviewStatus.name() != 'APPROVED'}"
+                                          th:action="@{/admin/reviews/approve/{id}(id=${r.reviewId})}" method="post">
+                                        <button type="submit" class="btn btn-success btn-sm" style="width:100%;">✅ Approve</button>
+                                    </form>
+                                    <form th:if="${r.reviewStatus.name() != 'REJECTED'}"
+                                          th:action="@{/admin/reviews/reject/{id}(id=${r.reviewId})}" method="post">
+                                        <button type="submit" class="btn btn-warning btn-sm" style="width:100%;">❌ Reject</button>
+                                    </form>
+                                    <form th:action="@{/admin/reviews/delete/{id}(id=${r.reviewId})}" method="post"
+                                          onsubmit="return confirm('Permanently delete this review?')">
+                                        <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">🗑 Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

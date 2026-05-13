@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${product.name} + ' | Truly Bare'">Product Detail | Truly Bare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/product-detail.css}">
+</head>
+<body>
+
+<th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+<th:block th:replace="~{fragments :: main_header}"></th:block>
+<th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+<main class="product-detail-page">
+    <div class="container">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav animate-fade-up">
+            <ul class="breadcrumbs">
+                <li><a href="/">Home</a></li>
+                <li class="separator">/</li>
+                <li><a th:href="@{/products}" href="/products">Shop</a></li>
+                <li class="separator">/</li>
+                <li th:if="${product.category != null}">
+                    <a th:href="@{/products(category=${product.category.name})}" th:text="${product.category.name}">Category</a>
+                </li>
+                <li th:if="${product.category != null}" class="separator">/</li>
+                <li th:text="${product.name}">Product Name</li>
+            </ul>
+        </nav>
+
+        <div class="product-detail-layout">
+            <!-- Left: Media Section -->
+            <div class="product-detail-media animate-fade-right">
+                <div class="product-gallery-swiper swiper">
+                    <div class="swiper-wrapper">
+                        <!-- Main Image -->
+                        <div class="swiper-slide">
+                            <div class="main-image-wrap">
+                                <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}" 
+                                     th:alt="${product.name}"
+                                     th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''">
+                            </div>
+                        </div>
+                        <!-- Sub Image 1 -->
+                        <div class="swiper-slide" th:if="${not #strings.isEmpty(product.subImageUrl1)}">
+                            <div class="main-image-wrap">
+                                <img th:src="${product.subImageUrl1}" th:alt="${product.name}">
+                            </div>
+                        </div>
+                        <!-- Sub Image 2 -->
+                        <div class="swiper-slide" th:if="${not #strings.isEmpty(product.subImageUrl2)}">
+                            <div class="main-image-wrap">
+                                <img th:src="${product.subImageUrl2}" th:alt="${product.name}">
+                            </div>
+                        </div>
+                        <!-- Sub Image 3 -->
+                        <div class="swiper-slide" th:if="${not #strings.isEmpty(product.subImageUrl3)}">
+                            <div class="main-image-wrap">
+                                <img th:src="${product.subImageUrl3}" th:alt="${product.name}">
+                            </div>
+                        </div>
+                        <!-- Sub Image 4 -->
+                        <div class="swiper-slide" th:if="${not #strings.isEmpty(product.subImageUrl4)}">
+                            <div class="main-image-wrap">
+                                <img th:src="${product.subImageUrl4}" th:alt="${product.name}">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Navigation -->
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                    <!-- Pagination -->
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+
+            <!-- Right: Info Section -->
+            <div class="product-detail-info animate-fade-left">
+                <div class="product-header">
+                    <span class="product-number" th:text="'Archive Nº' + ${#numbers.formatInteger(product.productId, 2)}">Archive Nº01</span>
+                    <div class="product-badges" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <span th:if="${product.isBestSeller}" class="card-badge bs" style="position: static; font-size: 10px; padding: 4px 10px;">Best Seller</span>
+                        <span th:if="${product.isNew}" class="card-badge new" style="position: static; font-size: 10px; padding: 4px 10px;">New Arrival</span>
+                        <span th:if="${product.isClassic}" class="card-badge classic" style="position: static; font-size: 10px; padding: 4px 10px;">Classic</span>
+                    </div>
+                    <h1 class="product-name" th:text="${product.name}">Product Name</h1>
+                    <p class="product-subtitle" th:if="${not #strings.isEmpty(product.subtitle)}" th:text="${product.subtitle}">Botanical Formulation</p>
+                    
+                    <div class="product-price-wrap">
+                        <div class="price-stack" style="gap: 2px;">
+                            <span class="p-price original-strike" th:if="${product.discountPrice != null}"
+                                th:text="'₹' + ${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                            <div class="product-price" th:classappend="${product.discountPrice != null ? 'discounted' : ''}"
+                                th:text="'₹' + ${#numbers.formatDecimal(product.discountPrice != null ? product.discountPrice : product.price, 0, 'COMMA', 0, 'POINT')}">₹0</div>
+                        </div>
+                        <span class="tax-hint">Inc. All Taxes</span>
+                    </div>
+                </div>
+
+                <div class="benefit-list">
+                    <div class="benefit-item">
+                        <i class="bi bi-patch-check"></i>
+                        <span>Clinically Proven</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-flower1"></i>
+                        <span>100% Botanical</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-droplet"></i>
+                        <span>No Synthetics</span>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Cruelty Free</span>
+                    </div>
+                </div>
+
+                <div class="product-description">
+                    <p class="intro-text" th:text="${product.description}">Detailed description of the product and its botanical heritage.</p>
+                </div>
+
+
+
+                <div class="product-actions" th:data-product-id="${product.productId}">
+                    <div class="cart-btn-stack" style="display:flex; flex-direction:column; gap:8px;">
+                        <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="add-to-cart-large add-to-cart-btn" 
+                                th:onclick="'addToCart(this, ' + ${product.discountPrice != null ? product.discountPrice : product.price} + '); return false;'">
+                            Add to Ritual <i class="bi bi-arrow-right"></i>
+                        </button>
+                        <button th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" class="add-to-cart-large" disabled 
+                                style="opacity: 0.6; cursor: not-allowed; background: #95a5a6; border: none; color: white;">
+                            SOLD OUT <i class="bi bi-slash-circle"></i>
+                        </button>
+                        <div th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                             style="text-align: center; font-size: 11px; color: #f39c12; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="bi bi-exclamation-triangle"></i> Limited Stock Available
+                        </div>
+                        <div th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                             style="text-align: center; font-size: 11px; color: #e74c3c; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="bi bi-slash-circle"></i> Currently Out of Stock
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Icons for Details Page -->
+                <div class="product-type-icons detail-icons" th:if="${product.category != null and (
+                    #strings.contains(product.category.name.toUpperCase(), 'SKIN') or 
+                    #strings.contains(product.category.name.toUpperCase(), 'SKN') or
+                    (product.category.parentCategory != null and (
+                        #strings.contains(product.category.parentCategory.name.toUpperCase(), 'SKIN') or 
+                        #strings.contains(product.category.parentCategory.name.toUpperCase(), 'SKN')
+                    ))
+                )}">
+                    <div class="icon-wrap" th:classappend="${product.skinType == null or !product.skinType.contains('Oily')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-brightness-high"></i></div>
+                        <span class="icon-label">Oily</span>
+                    </div>
+                    <div class="icon-wrap" th:classappend="${product.skinType == null or !product.skinType.contains('Dry')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-droplet"></i></div>
+                        <span class="icon-label">Dry</span>
+                    </div>
+                    <div class="icon-wrap" th:classappend="${product.skinType == null or !product.skinType.contains('Sensitive')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-feather"></i></div>
+                        <span class="icon-label">Sensitive</span>
+                    </div>
+                    <div class="icon-wrap" th:classappend="${product.skinType == null or !product.skinType.contains('Combo')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-circle-half"></i></div>
+                        <span class="icon-label">Combo</span>
+                    </div>
+                </div>
+                <div class="product-type-icons detail-icons" th:if="${product.category != null and (
+                    #strings.contains(product.category.name.toUpperCase(), 'HAIR') or
+                    (product.category.parentCategory != null and #strings.contains(product.category.parentCategory.name.toUpperCase(), 'HAIR'))
+                )}">
+                    <div class="icon-wrap" th:classappend="${product.hairType == null or !product.hairType.contains('Straight')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-dash-lg"></i></div>
+                        <span class="icon-label">Straight</span>
+                    </div>
+                    <div class="icon-wrap" th:classappend="${product.hairType == null or !product.hairType.contains('Wavy')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-activity"></i></div>
+                        <span class="icon-label">Wavy</span>
+                    </div>
+                    <div class="icon-wrap" th:classappend="${product.hairType == null or !product.hairType.contains('Curly')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-bezier2"></i></div>
+                        <span class="icon-label">Curly</span>
+                    </div>
+                    <div class="icon-wrap" th:classappend="${product.hairType == null or !product.hairType.contains('Coily')} ? 'unfit' : ''">
+                        <div class="icon-circle"><i class="bi bi-hurricane"></i></div>
+                        <span class="icon-label">Coily</span>
+                    </div>
+                </div>
+
+                <div class="product-accordion">
+                    <!-- Details -->
+                    <details open>
+                        <summary>Details</summary>
+                        <div class="accordion-content">
+                            <p th:text="${product.description}">Detailed overview of the product and its botanical heritage.</p>
+                        </div>
+                    </details>
+
+                    <!-- Ingredients -->
+                    <details th:if="${not #strings.isEmpty(product.ingredients)}">
+                        <summary>Ingredients</summary>
+                        <div class="accordion-content">
+                            <p th:text="${product.ingredients}">Full list of botanical and laboratory-grade ingredients.</p>
+                        </div>
+                    </details>
+
+                    <!-- Benefits -->
+                    <details th:if="${not #strings.isEmpty(product.benefits)}">
+                        <summary>Benefits</summary>
+                        <div class="accordion-content">
+                            <p th:text="${product.benefits}">Core physiological and aromatic benefits of the formulation.</p>
+                        </div>
+                    </details>
+
+                    <!-- FAQ / Usage -->
+                    <details th:if="${not #strings.isEmpty(product.usageInstructions) or not #strings.isEmpty(product.warnings)}">
+                        <summary>FAQ / Usage</summary>
+                        <div class="accordion-content">
+                            <div th:if="${not #strings.isEmpty(product.usageInstructions)}" class="usage-block" style="margin-bottom: 20px;">
+                                <strong style="display:block; margin-bottom:10px; color:var(--text-dark); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Application</strong>
+                                <p th:text="${product.usageInstructions}">Guidelines for optimal results.</p>
+                            </div>
+                            <div th:if="${not #strings.isEmpty(product.warnings)}" class="warning-block">
+                                <strong style="display:block; margin-bottom:10px; color:var(--bold-red); font-size:12px; letter-spacing:1px; text-transform:uppercase;">Caution</strong>
+                                <p th:text="${product.warnings}">Safety and storage considerations.</p>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- NEW: Reflections Section -->
+                <div class="product-reflections">
+                    <div class="reflections-header">
+                        <h2>Reflections</h2>
+                        <a th:href="@{/review/write/{id}(id=${product.productId})}" class="btn-write-review">
+                            Share Experience <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </div>
+
+                    <div class="reviews-list">
+                        <div th:if="${#lists.isEmpty(product.reviews)}" class="no-reviews">
+                            <p>No reflections recorded for this formulation yet. Be the first to share.</p>
+                        </div>
+
+                        <div th:each="review : ${product.reviews}" class="review-item">
+                            <div class="review-top">
+                                <div class="review-user">
+                                    <span class="user-initials" th:text="${#strings.substring(review.user.fullName,0,1)}">U</span>
+                                    <span class="user-name" th:text="${review.user.fullName}">User Name</span>
+                                    <span class="verified-badge" th:if="${review.isVerifiedPurchase}">
+                                        <i class="bi bi-patch-check-fill"></i> Verified
+                                    </span>
+                                </div>
+                                <div class="review-rating">
+                                    <i th:each="i : ${#numbers.sequence(1, 5)}" 
+                                       class="bi" 
+                                       th:classappend="${i <= review.rating} ? 'bi-star-fill' : 'bi-star'"></i>
+                                </div>
+                            </div>
+                            <div class="review-body">
+                                <p th:text="${review.comment}">Review comment goes here.</p>
+                            </div>
+                            <div class="review-footer">
+                                <span th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}">Date</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{fragments :: main_footer}"></th:block>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new Swiper('.product-gallery-swiper', {
+            loop: true,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            speed: 600,
+            effect: 'slide'
+        });
+    });
+</script>
+</body>
+</html>
+

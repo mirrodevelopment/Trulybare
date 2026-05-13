@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Registered Users')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('users')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title">👥 Registered Users</span>
+        <div class="topbar-right">
+            <div class="stat-pill">
+                <i class="bi bi-person-check"></i>
+                <span th:text="${users.size()}">0</span> Total
+            </div>
+            <div class="admin-badge">
+                <img th:src="@{/assets/images/logo.png}" class="admin-avatar" alt="Admin">
+                <span>Admin</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="card">
+            <div class="card-header">
+                <h2>Customer Directory</h2>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div th:if="${users.isEmpty()}" class="empty-state-block">
+                    <div class="empty-icon">👥</div>
+                    <div class="empty-title">No Users Found</div>
+                </div>
+                
+                <div th:if="${!users.isEmpty()}" style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Tier</th>
+                                <th>Account</th>
+                                <th>Points</th>
+                                <th>Orders</th>
+                                <th>Joined</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="u : ${users}">
+                                <td>
+                                    <div class="customer-cell">
+                                        <div class="customer-avatar" th:text="${u.fullName != null and !u.fullName.isEmpty() ? #strings.substring(u.fullName, 0, 1) : '?'}">U</div>
+                                        <div class="customer-info">
+                                            <div class="customer-name" th:text="${u.fullName}">User Name</div>
+                                            <div class="customer-email" th:text="${u.email}">user@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="muted" th:text="${u.phone}">9988776655</td>
+                                <td>
+                                    <span class="badge-status gold" th:text="${u.customerStatus != null ? u.customerStatus : 'Silver'}">Silver</span>
+                                </td>
+                                <td>
+                                    <span th:class="'badge-status ' + (${u.isActive} ? 'green' : 'red')"
+                                          th:text="${u.isActive} ? 'Active' : 'Suspended'">Active</span>
+                                </td>
+                                <td>
+                                    <span style="font-weight:600; color:var(--amber);">⭐ <span th:text="${u.loyaltyPoints != null ? u.loyaltyPoints : 0}">0</span></span>
+                                </td>
+                                <td th:text="${u.totalOrders != null ? u.totalOrders : 0}">0</td>
+                                <td class="muted" th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'dd MMM yyyy') : '—'}">01 Jan 2024</td>
+                                <td>
+                                    <span th:class="'badge-status ' + (${u.role.name() == 'ADMIN'} ? 'red' : 'blue')" 
+                                          th:text="${u.role}">USER</span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:5px;">
+                                        <a th:href="@{/admin/users/edit/{id}(id=${u.userId})}" class="btn btn-outline btn-sm" title="Edit User">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form th:action="@{/admin/users/toggle-status}" method="post" style="display:inline;">
+                                            <input type="hidden" name="userId" th:value="${u.userId}"/>
+                                            <button type="submit" class="btn btn-sm" 
+                                                    th:classappend="${u.isActive} ? 'btn-outline-red' : 'btn-outline-green'"
+                                                    th:title="${u.isActive} ? 'Suspend User' : 'Activate User'"
+                                                    th:disabled="${u.email == 'Trulybare@admin'}">
+                                                <i th:class="${u.isActive} ? 'bi bi-person-x' : 'bi bi-person-check'"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

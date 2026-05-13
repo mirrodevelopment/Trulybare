@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Return Detail')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('returns')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <a href="/admin/returns" style="color:var(--bark);text-decoration:none;font-size:18px;"><i class="bi bi-arrow-left"></i></a>
+            <span class="page-title" th:if="${rr != null}">
+                RET-<span th:text="${rr.id != null ? #numbers.formatInteger(rr.id, 3) : '???' }">001</span>
+                <span th:text="' · ' + ${rr.user != null ? rr.user.fullName : 'Unknown'}" style="font-weight:400;color:var(--text-muted);font-size:16px;"></span>
+            </span>
+        </div>
+        <!-- Status badge -->
+        <span th:if="${rr != null and rr.status != null}" th:with="s=${rr.status.name()}"
+              th:class="${s.contains('PENDING') ? 'badge-status yellow' :
+                          s == 'APPROVED' ? 'badge-status green' :
+                          s == 'REJECTED' ? 'badge-status red' :
+                          s.contains('REFUND') ? 'badge-status blue' :
+                          s == 'COMPLETED' ? 'badge-status green' :
+                          'badge-status yellow'}"
+              style="font-size:12px;padding:5px 14px;"
+              th:text="${rr.status.name().replace('_', ' ')}">STATUS</span>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}">✅ <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}">  ❌ <span th:text="${error}"></span></div>
+
+        <div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;">
+
+            <!-- ── LEFT: Chat + Info ── -->
+            <div>
+
+                <!-- Order & Return Info -->
+                <div class="card" style="margin-bottom:20px;padding:20px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div th:if="${rr.order != null}">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Order</div>
+                            <div style="font-size:15px;font-weight:700;" th:text="${rr.order.orderNumber}"></div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;"
+                                 th:text="'Placed: ' + ${rr.order.createdAt != null ? #temporals.format(rr.order.createdAt,'dd MMM yyyy') : '—'}"></div>
+                        </div>
+                        <div th:if="${rr.user != null}">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Customer</div>
+                            <div style="font-size:15px;font-weight:700;" th:text="${rr.user.fullName}"></div>
+                            <div style="font-size:12px;color:var(--text-muted);" th:text="${rr.user.email}"></div>
+                            <div style="font-size:12px;color:var(--text-muted);" th:text="${rr.user.phone}"></div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Return Type</div>
+                            <div style="font-size:14px;font-weight:700;"
+                                 th:text="${rr.returnType == 'REPLACEMENT' ? '🔄 Replacement' : '💰 Return & Refund'}"></div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Reason</div>
+                            <div style="font-size:14px;font-weight:700;" th:text="${rr.reason}"></div>
+                        </div>
+                        <div th:if="${rr.order != null and rr.order.payment != null}">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Payment Method</div>
+                            <div style="font-size:14px;font-weight:700;" th:text="${rr.order.payment.paymentMethod}"></div>
+                        </div>
+                        <div th:if="${rr.description != null and !rr.description.isBlank()}" style="grid-column:span 2;">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Customer Description</div>
+                            <div style="font-size:13px;color:var(--text-medium);background:rgba(201,168,76,0.07);border-radius:8px;padding:10px 14px;border:1px solid var(--border);"
+                                 th:text="${rr.description}"></div>
+                        </div>
+                        <div th:if="${rr.paymentId != null}">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Razorpay Payment ID</div>
+                            <div style="font-size:12px;font-family:monospace;" th:text="${rr.paymentId}"></div>
+                        </div>
+                        <div th:if="${rr.razorpayRefundId != null}">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Refund ID</div>
+                            <div style="font-size:12px;font-family:monospace;color:#1a8f4c;" th:text="${rr.razorpayRefundId}"></div>
+                        </div>
+                        <div th:if="${rr.refundAmount != null}">
+                            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:4px;">Refund Amount</div>
+                            <div style="font-size:16px;font-weight:800;color:#1a8f4c;">₹<span th:text="${rr.refundAmount}"></span></div>
+                            <div th:if="${rr.deliveryFeeDeducted != null and rr.deliveryFeeDeducted > 0}"
+                                 style="font-size:11px;color:var(--text-muted);">
+                                Delivery ₹<span th:text="${rr.deliveryFeeDeducted}"></span> deducted
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Proof images -->
+                    <div th:if="${rr.images != null and !rr.images.isEmpty()}" style="margin-top:16px;">
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:10px;">Proof Images</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                            <a th:each="img : ${rr.images}" th:href="${img.imageUrl}" target="_blank">
+                                <img th:src="${img.imageUrl}"
+                                     style="width:80px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border);"
+                                     onerror="this.style.display='none'">
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Order items -->
+                    <div style="margin-top:16px;">
+                        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:10px;">Order Items</div>
+                        <th:block th:if="${rr.order != null}">
+                            <div th:each="item : ${rr.order.orderItems}"
+                                 style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <img th:if="${item.product != null}" th:src="${item.product.imageUrl}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;"
+                                         onerror="this.src='/assets/images/placeholder.png'">
+                                    <div th:if="${item.product != null}">
+                                        <div style="font-weight:600;" th:text="${item.product.name}"></div>
+                                        <div style="font-size:11px;color:var(--text-muted);" th:text="'Qty: ' + ${item.quantity}"></div>
+                                    </div>
+                                </div>
+                                <div style="font-weight:700;" th:text="'₹' + ${#numbers.formatDecimal(item.price * item.quantity, 0, 'COMMA', 2, 'POINT')}"></div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding-top:10px;font-size:13px;">
+                                <span style="color:var(--text-muted);">Shipping</span>
+                                <span th:text="'₹' + ${rr.order.shippingFees != null ? rr.order.shippingFees : 0}"></span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding-top:6px;font-size:14px;font-weight:800;color:var(--garnet);">
+                                <span>Grand Total</span>
+                                <span th:text="'₹' + ${#numbers.formatDecimal(rr.order.totalAmount, 0, 'COMMA', 2, 'POINT')}"></span>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+
+                <!-- Chat -->
+                <div class="card" style="padding:0;overflow:hidden;">
+                    <div style="padding:14px 20px;border-bottom:1px solid var(--border);font-weight:700;font-size:14px;">
+                        💬 Support Chat
+                        <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;"
+                              th:text="${rr.chatOpen ? '(Active)' : '(Closed)'}"></span>
+                    </div>
+
+                    <!-- Messages -->
+                    <div style="max-height:420px;overflow-y:auto;padding:16px;background:#FAF8F5;background-image:url('/assets/images/logo.png');background-repeat:no-repeat;background-position:center;background-size:240px;background-blend-mode:multiply;display:flex;flex-direction:column;gap:6px;" id="adminChat">
+                        <style>
+                            .msg-bubble-admin { position: relative; padding: 6px 10px 18px; border-radius: 12px; font-size: 13.5px; line-height: 1.45; box-shadow: 0 2px 5px rgba(0,0,0,0.05); word-break: break-word; max-width: 85%; }
+                            .msg-bubble-admin.incoming { background: #fff; align-self: flex-start; border-top-left-radius: 0; border: 1px solid rgba(201,168,76,0.2); color: #1c1c1c; }
+                            .msg-bubble-admin.outgoing { background: #8B1A1A; align-self: flex-end; border-top-right-radius: 0; color: #fff; }
+                            
+                            .msg-bubble-admin.incoming::after { content: ""; position: absolute; top: 0; left: -8px; width: 12px; height: 14px; background: #fff; clip-path: polygon(100% 0, 100% 100%, 0 0); }
+                            .msg-bubble-admin.outgoing::after { content: ""; position: absolute; top: 0; right: -8px; width: 12px; height: 14px; background: #8B1A1A; clip-path: polygon(0 0, 0 100%, 100% 0); }
+                            
+                            .msg-time-admin { font-size: 10px; position: absolute; bottom: 4px; right: 8px; white-space: nowrap; }
+                            .msg-bubble-admin.incoming .msg-time-admin { color: #9C8875; }
+                            .msg-bubble-admin.outgoing .msg-time-admin { color: rgba(255,255,255,0.7); }
+                            .msg-sender-admin { font-size: 11px; font-weight: 700; color: #C9A84C; display: block; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+                        </style>
+
+                        <th:block th:if="${rr.images != null and !rr.images.isEmpty()}">
+                            <div class="msg-bubble-admin incoming">
+                                <span class="msg-sender-admin" th:text="${rr.user != null ? rr.user.fullName : 'Customer'}"></span>
+                                <div style="margin-bottom:6px;">📸 Customer attached proof image(s):</div>
+                                <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                    <img th:each="img : ${rr.images}" th:src="${img.imageUrl}" style="max-width:120px;border-radius:4px;cursor:pointer;">
+                                </div>
+                                <div class="msg-time-admin" th:text="${rr.createdAt != null ? #temporals.format(rr.createdAt,'hh:mm a') : ''}"></div>
+                            </div>
+                        </th:block>
+                        
+                        <th:block th:if="${rr.description != null and !rr.description.isBlank()}">
+                            <div class="msg-bubble-admin incoming">
+                                <span class="msg-sender-admin" th:text="${rr.user != null ? rr.user.fullName : 'Customer'}"></span>
+                                <span th:text="${rr.description}"></span>
+                                <div class="msg-time-admin" th:text="${rr.createdAt != null ? #temporals.format(rr.createdAt,'hh:mm a') : ''}"></div>
+                            </div>
+                        </th:block>
+                        
+                        <th:block th:if="${rr.messages != null}" th:each="msg : ${rr.messages}">
+                            <div th:class="${msg.senderType == 'USER'} ? 'msg-bubble-admin incoming' : 'msg-bubble-admin outgoing'">
+                                <span class="msg-sender-admin" th:if="${msg.senderType == 'USER'}" th:text="${msg.senderName}">Customer</span>
+                                <span th:text="${msg.message}"></span>
+                                <img th:if="${msg.attachmentUrl != null}" th:src="${msg.attachmentUrl}" style="display:block;max-width:160px;border-radius:4px;margin-top:6px;">
+                                <div class="msg-time-admin" th:text="${msg.createdAt != null ? #temporals.format(msg.createdAt,'hh:mm a') : ''}"></div>
+                            </div>
+                        </th:block>
+                        
+                        <div th:if="${(rr.messages == null or rr.messages.isEmpty()) and (rr.description == null or rr.description.isBlank())}"
+                             style="text-align:center;color:#9C8875;font-size:11px;padding:30px;background:#fff;border-radius:12px;margin:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);border:1px solid rgba(201,168,76,0.2);">
+                             No messages yet. Start the conversation.
+                        </div>
+                    </div>
+
+                    <!-- Admin send message -->
+                    <div th:if="${rr.chatOpen}" style="padding:10px 16px;background:#f0f2f5;border-top:1px solid var(--border);">
+                        <div id="adminAttachPreview" style="display:none;align-items:center;gap:8px;padding:8px;background:#fff;border-radius:8px;margin-bottom:8px;font-size:12px;color:var(--text-medium);">
+                            <i class="bi bi-image"></i>
+                            <span id="adminAttachName"></span>
+                            <button type="button" onclick="clearAdminAttach()" style="background:none;border:none;color:#dc2626;font-weight:700;cursor:pointer;">×</button>
+                        </div>
+                        <form th:action="@{'/admin/returns/' + ${rr.id} + '/message'}" method="post" enctype="multipart/form-data" id="adminChatForm" style="display:flex;gap:10px;align-items:center;">
+                            <label for="adminAttachInput" style="cursor:pointer;color:#54656f;font-size:20px;">
+                                <i class="bi bi-paperclip"></i>
+                            </label>
+                            <input type="file" id="adminAttachInput" name="attachment" accept="image/*" style="display:none;" onchange="showAdminAttach(this)">
+                            
+                            <input type="text" name="message" id="adminMsgInput" placeholder="Type a reply…"
+                                   style="flex:1;border:none;border-radius:8px;padding:10px 14px;font-size:14px;outline:none;font-family:inherit;box-shadow:0 1px 1px rgba(0,0,0,0.05);">
+                            
+                            <button type="submit" class="btn btn-primary" style="background:none;border:none;color:#54656f;font-size:20px;padding:0;width:auto;min-width:unset;">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    <script>
+                        function showAdminAttach(input) {
+                            if (input.files && input.files[0]) {
+                                document.getElementById('adminAttachName').textContent = input.files[0].name;
+                                document.getElementById('adminAttachPreview').style.display = 'flex';
+                                document.getElementById('adminMsgInput').required = false;
+                            }
+                        }
+                        function clearAdminAttach() {
+                            document.getElementById('adminAttachInput').value = '';
+                            document.getElementById('adminAttachPreview').style.display = 'none';
+                            document.getElementById('adminMsgInput').required = true;
+                        }
+                    </script>
+                </div>
+
+            </div>
+
+            <!-- ── RIGHT: Actions + Status Log ── -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+
+                <!-- Action Panel -->
+                <div class="card" style="padding:20px;">
+                    <div style="font-weight:700;font-size:14px;margin-bottom:16px;">⚡ Admin Actions</div>
+
+                    <!-- APPROVE REFUND -->
+                    <div th:if="${(rr.status.name() == 'PENDING_REVIEW' or rr.status.name() == 'UNDER_REVIEW' or rr.status.name() == 'APPROVED') and rr.returnType == 'RETURN' and rr.razorpayRefundId == null}"
+                         style="margin-bottom:12px;">
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Refund Calculation:</div>
+                        <div style="background:rgba(22,163,74,0.06);border:1px solid rgba(22,163,74,0.2);border-radius:10px;padding:12px;font-size:12px;margin-bottom:10px;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                                <span>Order Total</span>
+                                <strong th:text="'₹' + ${rr.order.totalAmount}"></strong>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#dc2626;">
+                                <span>Delivery Fee (deducted)</span>
+                                <strong th:text="'- ₹' + ${rr.order.shippingFees != null ? rr.order.shippingFees : 0}"></strong>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(22,163,74,0.2);padding-top:6px;margin-top:4px;">
+                                <strong>Estimated Refund</strong>
+                                <strong style="color:#16a34a;" th:if="${rr.order != null}" 
+                                        th:text="'₹' + ${rr.order.totalAmount - (rr.order.shippingFees != null ? rr.order.shippingFees : 0)}"></strong>
+                            </div>
+                        </div>
+                        <form th:action="@{'/admin/returns/' + ${rr.id} + '/approve-refund'}" method="post">
+                            <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;"
+                                    th:onclick="'return confirm(\'' + (${rr.order.payment != null and rr.order.payment.paymentMethod == 'COD'} ? 'Mark this COD order as refunded? (Manual refund required)' : 'Initiate Razorpay refund now?') + '\')'">
+                                <i class="bi bi-cash-coin"></i>
+                                <span th:text="${rr.order.payment != null and rr.order.payment.paymentMethod == 'COD' ? 'Approve Manual Refund (COD)' : 'Approve & Initiate Refund'}"></span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- APPROVE REPLACEMENT -->
+                    <div th:if="${(rr.status.name() == 'PENDING_REVIEW' or rr.status.name() == 'UNDER_REVIEW' or rr.status.name() == 'APPROVED') and rr.returnType == 'REPLACEMENT'}"
+                         style="margin-bottom:12px;">
+                        <form th:action="@{'/admin/returns/' + ${rr.id} + '/approve-replacement'}" method="post">
+                            <button type="submit" class="btn" style="width:100%;justify-content:center;background:#7c3aed;color:#fff;"
+                                    onclick="return confirm('Approve replacement for this order?')">
+                                <i class="bi bi-box-seam"></i> Approve Replacement
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- REJECT -->
+                    <div th:if="${rr.status.name() != 'REJECTED' and rr.status.name() != 'COMPLETED' and rr.status.name() != 'REFUND_COMPLETED'}"
+                         style="margin-bottom:12px;">
+                        <details>
+                            <summary style="cursor:pointer;font-size:12px;color:#dc2626;font-weight:600;padding:8px 0;">
+                                ❌ Reject This Request
+                            </summary>
+                            <form th:action="@{'/admin/returns/' + ${rr.id} + '/reject'}" method="post" style="margin-top:10px;">
+                                <textarea name="rejectionReason" rows="3"
+                                          placeholder="Reason for rejection (shown to customer)…"
+                                          style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:12px;box-sizing:border-box;margin-bottom:8px;"
+                                          required></textarea>
+                                <button type="submit" class="btn" style="background:#dc2626;color:#fff;width:100%;justify-content:center;"
+                                        onclick="return confirm('Reject this return request?')">
+                                    Confirm Rejection
+                                </button>
+                            </form>
+                        </details>
+                    </div>
+
+                    <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+
+                    <!-- STATUS UPDATE -->
+                    <form th:action="@{'/admin/returns/' + ${rr.id} + '/status'}" method="post">
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Change Status</div>
+                        <select name="status" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:8px;font-family:inherit;">
+                            <th:block th:each="s : ${statuses}">
+                                <option th:value="${s.name()}"
+                                        th:text="${s.name().replace('_', ' ')}"
+                                        th:selected="${rr.status == s}"></option>
+                            </th:block>
+                        </select>
+                        <textarea name="adminRemarks" rows="2" placeholder="Add a note (optional)…"
+                                  style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:12px;box-sizing:border-box;margin-bottom:8px;resize:vertical;"
+                                  th:text="${rr.adminRemarks}"></textarea>
+                        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                            💾 Save Status
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Status Timeline / Audit Log -->
+                <div class="card" style="padding:20px;">
+                    <div style="font-weight:700;font-size:14px;margin-bottom:14px;">📋 Status History</div>
+                    <div style="display:flex;flex-direction:column;gap:12px;max-height:280px;overflow-y:auto;">
+                        <div th:each="log : ${rr.statusLogs}"
+                             style="display:flex;gap:12px;align-items:flex-start;">
+                            <div style="width:8px;height:8px;border-radius:50%;background:var(--garnet);flex-shrink:0;margin-top:5px;"></div>
+                            <div>
+                                <div style="font-size:12px;font-weight:600;">
+                                    <span th:if="${log.oldStatus != null}"
+                                          th:text="${log.oldStatus.name().replace('_',' ')} + ' → '"></span>
+                                    <span th:text="${log.newStatus.name().replace('_',' ')}"></span>
+                                </div>
+                                <div style="font-size:11px;color:var(--text-muted);" th:text="${log.changedBy}"></div>
+                                <div th:if="${log.note != null and !log.note.isBlank()}"
+                                     style="font-size:11px;color:var(--text-muted);font-style:italic;" th:text="${log.note}"></div>
+                                <div style="font-size:10px;color:var(--text-muted);"
+                                     th:text="${log.timestamp != null ? #temporals.format(log.timestamp,'dd MMM yyyy · hh:mm a') : '—'}"></div>
+                            </div>
+                        </div>
+                        <div th:if="${rr.statusLogs.isEmpty()}" style="font-size:12px;color:var(--text-muted);">No status changes yet.</div>
+                    </div>
+                </div>
+
+                <!-- Activity Log for this return -->
+                <div class="card" style="padding:20px;" th:if="${!activityLogs.isEmpty()}">
+                    <div style="font-weight:700;font-size:14px;margin-bottom:14px;">🔍 Admin Activity</div>
+                    <div style="display:flex;flex-direction:column;gap:10px;max-height:220px;overflow-y:auto;">
+                        <div th:each="log : ${activityLogs}" style="font-size:12px;">
+                            <div style="font-weight:600;color:var(--bark);" th:text="${log.actionType != null ? log.actionType.replace('_',' ') : 'ACTION'}"></div>
+                            <div style="color:var(--text-medium);" th:text="${log.description}"></div>
+                            <div style="color:var(--text-muted);font-size:10px;"
+                                 th:text="${log.adminName + ' · ' + (log.createdAt != null ? #temporals.format(log.createdAt,'dd MMM · hh:mm a') : '—')}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll chat
+    const chat = document.getElementById('adminChat');
+    if (chat) chat.scrollTop = chat.scrollHeight;
+</script>
+
+<style>
+.btn-success { background: #16a34a; color: #fff; border: none; }
+.btn-success:hover { background: #15803d; }
+details summary { list-style: none; }
+details summary::-webkit-details-marker { display: none; }
+</style>
+
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head(${card.cardId == null} ? 'Add Ritual Card' : 'Edit Ritual Card')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('ritual-cards')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title" th:text="${card.cardId == null} ? '➕ Add Ritual Card' : '✏ Edit Ritual Card'">Add Ritual Card</span>
+        <a th:href="@{/admin/ritual-cards}" class="btn btn-outline">Back to List</a>
+    </div>
+
+    <div class="content-area">
+        <form th:action="@{/admin/ritual-cards/save}" th:object="${card}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:field="*{cardId}">
+
+            <div class="form-container-split">
+                <div class="form-main-col">
+                    <div class="card">
+                        <div class="card-header"><h3>Card Content</h3></div>
+                        <div class="card-body">
+                            <div class="form-group full">
+                                <label>Card Title / Product Name *</label>
+                                <input type="text" th:field="*{title}" placeholder="e.g. Joint Strength" required/>
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Short Subtitle</label>
+                                <input type="text" th:field="*{subtitle}" placeholder="e.g. Support for vitality and ease"/>
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Card Image</label>
+                                <div id="dropZone" class="upload-drop-zone">
+                                    <div class="dz-content">
+                                        <i class="bi bi-cloud-arrow-up" style="font-size: 32px; color: var(--navy-light);"></i>
+                                        <p>Drag & drop image here or <span>browse</span></p>
+                                        <small>Supports PNG, JPG, WEBP (Max 2MB)</small>
+                                    </div>
+                                    <input type="file" name="imageFile" id="imageFileInput" accept="image/*" style="display: none;"/>
+                                </div>
+                                <input type="hidden" th:field="*{imageUrl}" id="imageUrlInput"/>
+                            </div>
+
+                            <!-- Image Preview -->
+                            <div class="form-group full" id="previewContainer" th:style="${card.imageUrl != null and !card.imageUrl.isBlank()} ? 'display:block' : 'display:none'">
+                                <label>Current / Selected Image</label>
+                                <div style="height:150px; border-radius:10px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; background: #fdfbf8; position: relative;">
+                                    <img id="imagePreview" th:src="${card.imageUrl}" style="max-width:100%; max-height:100%; object-fit:contain;"/>
+                                    <button type="button" id="removeImageBtn" style="position: absolute; top: 5px; right: 5px; border: none; background: #e74c3c; color: white; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header"><h3>Links & Actions</h3></div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Featured Product (Optional)</label>
+                                <select th:field="*{product.productId}" class="form-select" onchange="handleProductChange(this)">
+                                    <option value="">— No Specific Product —</option>
+                                    <th:block th:each="p : ${products}">
+                                        <option th:value="${p.productId}" th:text="${p.name}">Product Name</option>
+                                    </th:block>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Button Link (Target Collection)</label>
+                                <select id="linkSelect" class="form-select" onchange="handleLinkChange(this.value)">
+                                    <option value="/products">All Products</option>
+                                    <th:block th:each="cat : ${categories}">
+                                        <option th:value="'/products/category/' + ${cat.categoryId}" th:text="${cat.name}"
+                                                th:selected="${card.buttonLink == '/products/category/' + cat.categoryId}">Category</option>
+                                    </th:block>
+                                    <option value="custom" th:selected="${card.buttonLink != null and !#strings.startsWith(card.buttonLink, '/products') and !#strings.startsWith(card.buttonLink, '/product/')}">Custom URL...</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group full" id="customLinkGroup" th:style="${card.buttonLink != null and !#strings.startsWith(card.buttonLink, '/products') and !#strings.startsWith(card.buttonLink, '/product/')} ? 'display:block' : 'display:none'">
+                                <label>Custom Link (URL)</label>
+                                <input type="text" name="buttonLink" id="customLinkInput" th:value="${card.buttonLink}" 
+                                       placeholder="/products or https://..." autocomplete="off"/>
+                                <small style="font-size: 10px; color: var(--text-muted);">Relative path or full URL. (External links open in new tab)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-side-col">
+                    <div class="card">
+                        <div class="card-header"><h3>Status & Sort</h3></div>
+                        <div class="card-body">
+                            <div class="form-group full">
+                                <label>Display Order</label>
+                                <input type="number" th:field="*{displayOrder}" placeholder="0"/>
+                                <small style="font-size: 10px; color: var(--text-muted);">Lower numbers are shown first.</small>
+                            </div>
+
+
+
+                            <div class="gold-rule"></div>
+                            <button type="submit" class="btn btn-primary full">💾 Save Ritual Card</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .upload-drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: #faf9f7;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .upload-drop-zone:hover, .upload-drop-zone.dragover {
+        border-color: var(--navy-light);
+        background: #f0eeea;
+    }
+    .dz-content p {
+        margin: 10px 0 5px;
+        font-weight: 500;
+        color: var(--navy);
+    }
+    .dz-content p span {
+        color: var(--gold);
+        text-decoration: underline;
+    }
+</style>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('imageFileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeBtn = document.getElementById('removeImageBtn');
+    const urlInput = document.getElementById('imageUrlInput');
+
+    // Click to browse
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+    });
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFiles(files);
+        }
+    }
+
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+
+    function handleFiles(files) {
+        const file = files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    removeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        fileInput.value = '';
+        urlInput.value = '';
+        imagePreview.src = '';
+        previewContainer.style.display = 'none';
+    });
+
+    function handleProductChange(select) {
+        const productId = select.value;
+        const customInput = document.getElementById('customLinkInput');
+        const customGroup = document.getElementById('customLinkGroup');
+        const linkSelect = document.getElementById('linkSelect');
+        
+        if (productId) {
+            customInput.value = '/product/' + productId;
+            customGroup.style.display = 'none';
+            linkSelect.value = '';
+        }
+    }
+
+    function handleLinkChange(val) {
+        const customGroup = document.getElementById('customLinkGroup');
+        const customInput = document.getElementById('customLinkInput');
+        if (val === 'custom') {
+            customGroup.style.display = 'block';
+            // If it currently contains a system link, clear it for custom entry
+            if (customInput.value.startsWith('/product') || customInput.value.startsWith('/products')) {
+                customInput.value = '';
+            }
+            customInput.focus();
+        } else {
+            customGroup.style.display = 'none';
+            customInput.value = val;
+        }
+    }
+</script>
+
+</body>
+</html>

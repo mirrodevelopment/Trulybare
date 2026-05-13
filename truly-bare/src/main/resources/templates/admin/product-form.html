@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Add / Edit Product')}"></head>
+<body>
+<div th:replace="~{admin/layout :: sidebar('products')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title" th:text="${product.productId != null} ? 'Edit Product' : 'Add New Product'">Product Form</span>
+        <a th:href="@{/admin/products}" class="btn btn-outline"><i class="bi bi-arrow-left"></i> Back</a>
+    </div>
+
+    <div class="content-area">
+        <form th:action="@{/admin/products/save}" method="post" id="productForm" enctype="multipart/form-data" style="max-width:940px;">
+            <input type="hidden" name="productId" th:value="${product.productId}"/>
+
+            <div class="pf-layout">
+
+                <!-- LEFT COLUMN -->
+                <div class="pf-left">
+
+                    <!-- Image Upload Card -->
+                    <div class="card pf-card">
+                        <div class="card-header"><h2><i class="bi bi-image"></i> Main Product Image</h2></div>
+                        <div class="card-body">
+                            <!-- Main Image -->
+                            <div class="img-preview-wrap" id="imgPreviewWrap">
+                                <img id="imgPreview"
+                                     th:src="${product.imageUrl != null and !product.imageUrl.isBlank()} ? ${product.imageUrl} : ''"
+                                     th:style="${product.imageUrl != null and !product.imageUrl.isBlank()} ? 'display:block' : 'display:none'"
+                                     alt="Product Preview">
+                                <div class="img-placeholder" id="imgPlaceholder"
+                                     th:style="${product.imageUrl != null and !product.imageUrl.isBlank()} ? 'display:none' : 'display:flex'">
+                                    <i class="bi bi-image" style="font-size:36px; color:var(--gold); margin-bottom:8px;"></i>
+                                    <span>Main Image</span>
+                                </div>
+                            </div>
+                            <div class="drop-zone" onclick="document.getElementById('fileMain').click()">
+                                <i class="bi bi-cloud-upload drop-icon"></i>
+                                <p class="drop-title">Upload to Google Cloud Storage</p>
+                                <p class="drop-sub">JPG · PNG · WebP · GIF &nbsp;·&nbsp; Max 10 MB</p>
+                                <input type="file" id="fileMain" name="mainImageFile" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleFile(this, 'imgPreview', 'imgPlaceholder')">
+                            </div>
+                            <input type="hidden" name="imageUrl" th:value="${product.imageUrl}">
+                        </div>
+                    </div>
+
+                    <!-- Sub Images Gallery -->
+                    <div class="card pf-card">
+                        <div class="card-header"><h2><i class="bi bi-images"></i> Sub-Image Gallery (4 Total)</h2></div>
+                        <div class="card-body">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                                <!-- Sub 1 -->
+                                <div class="sub-img-box">
+                                    <div class="sub-img-preview" onclick="document.getElementById('f1').click()" style="cursor:pointer;">
+                                        <img id="prev1" th:src="${product.subImageUrl1}" th:style="${product.subImageUrl1 != null} ? 'display:block' : 'display:none'">
+                                        <i class="bi bi-plus-lg" th:style="${product.subImageUrl1 != null} ? 'display:none' : 'block'"></i>
+                                    </div>
+                                    <input type="file" id="f1" name="sub1File" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleFile(this, 'prev1', null)">
+                                    <button type="button" class="btn btn-outline btn-sm" style="width:100%" onclick="document.getElementById('f1').click()">Sub 1</button>
+                                    <input type="hidden" name="subImageUrl1" th:value="${product.subImageUrl1}">
+                                </div>
+                                <!-- Sub 2 -->
+                                <div class="sub-img-box">
+                                    <div class="sub-img-preview" onclick="document.getElementById('f2').click()" style="cursor:pointer;">
+                                        <img id="prev2" th:src="${product.subImageUrl2}" th:style="${product.subImageUrl2 != null} ? 'display:block' : 'display:none'">
+                                        <i class="bi bi-plus-lg" th:style="${product.subImageUrl2 != null} ? 'display:none' : 'block'"></i>
+                                    </div>
+                                    <input type="file" id="f2" name="sub2File" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleFile(this, 'prev2', null)">
+                                    <button type="button" class="btn btn-outline btn-sm" style="width:100%" onclick="document.getElementById('f2').click()">Sub 2</button>
+                                    <input type="hidden" name="subImageUrl2" th:value="${product.subImageUrl2}">
+                                </div>
+                                <!-- Sub 3 -->
+                                <div class="sub-img-box">
+                                    <div class="sub-img-preview" onclick="document.getElementById('f3').click()" style="cursor:pointer;">
+                                        <img id="prev3" th:src="${product.subImageUrl3}" th:style="${product.subImageUrl3 != null} ? 'display:block' : 'display:none'">
+                                        <i class="bi bi-plus-lg" th:style="${product.subImageUrl3 != null} ? 'display:none' : 'block'"></i>
+                                    </div>
+                                    <input type="file" id="f3" name="sub3File" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleFile(this, 'prev3', null)">
+                                    <button type="button" class="btn btn-outline btn-sm" style="width:100%" onclick="document.getElementById('f3').click()">Sub 3</button>
+                                    <input type="hidden" name="subImageUrl3" th:value="${product.subImageUrl3}">
+                                </div>
+                                <!-- Sub 4 -->
+                                <div class="sub-img-box">
+                                    <div class="sub-img-preview" onclick="document.getElementById('f4').click()" style="cursor:pointer;">
+                                        <img id="prev4" th:src="${product.subImageUrl4}" th:style="${product.subImageUrl4 != null} ? 'display:block' : 'display:none'">
+                                        <i class="bi bi-plus-lg" th:style="${product.subImageUrl4 != null} ? 'display:none' : 'block'"></i>
+                                    </div>
+                                    <input type="file" id="f4" name="sub4File" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleFile(this, 'prev4', null)">
+                                    <button type="button" class="btn btn-outline btn-sm" style="width:100%" onclick="document.getElementById('f4').click()">Sub 4</button>
+                                    <input type="hidden" name="subImageUrl4" th:value="${product.subImageUrl4}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visibility Card -->
+                    <div class="card pf-card">
+                        <div class="card-header"><h2><i class="bi bi-eye"></i> Visibility</h2></div>
+                        <div class="card-body">
+                            <div class="toggle-list">
+                                <label class="toggle-row">
+                                    <div>
+                                        <div class="toggle-label">Active in Store</div>
+                                        <div class="toggle-hint">Product is visible to customers</div>
+                                    </div>
+                                    <input type="checkbox" class="tb-toggle" name="isActive" th:checked="${product.isActive != false}">
+                                </label>
+                                <label class="toggle-row">
+                                    <div>
+                                        <div class="toggle-label">Featured on Homepage</div>
+                                        <div class="toggle-hint">Show in featured carousel</div>
+                                    </div>
+                                    <input type="checkbox" class="tb-toggle" name="isFeatured" th:checked="${product.isFeatured}">
+                                </label>
+                                <label class="toggle-row">
+                                    <div>
+                                        <div class="toggle-label">Best Seller Badge</div>
+                                        <div class="toggle-hint">Show "Best Seller" tag on card</div>
+                                    </div>
+                                    <input type="checkbox" class="tb-toggle" name="isBestSeller" th:checked="${product.isBestSeller}">
+                                </label>
+                                <label class="toggle-row">
+                                    <div>
+                                        <div class="toggle-label">New Arrival</div>
+                                        <div class="toggle-hint">Show "New" tag on card</div>
+                                    </div>
+                                    <input type="checkbox" class="tb-toggle" name="isNew" th:checked="${product.isNew}">
+                                </label>
+                                <label class="toggle-row">
+                                    <div>
+                                        <div class="toggle-label">Classic Collection</div>
+                                        <div class="toggle-hint">Show "Classic" tag on card</div>
+                                    </div>
+                                    <input type="checkbox" class="tb-toggle" name="isClassic" th:checked="${product.isClassic}">
+                                </label>
+                                <label class="toggle-row" style="background: rgba(231, 76, 60, 0.05); margin-top: 10px; border-radius: 8px; padding: 14px;">
+                                    <div>
+                                        <div class="toggle-label" style="color: #c0392b;">Force Sold Out</div>
+                                        <div class="toggle-hint">Mark as Sold Out regardless of stock</div>
+                                    </div>
+                                    <input type="checkbox" class="tb-toggle" name="forceSoldOut" th:checked="${product.forceSoldOut}">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="pf-right">
+
+                    <!-- Basic Info -->
+                    <div class="card pf-card">
+                        <div class="card-header"><h2><i class="bi bi-info-circle"></i> Basic Information</h2></div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group full">
+                                    <label>Product Name *</label>
+                                    <input type="text" name="name" th:value="${product.name}" placeholder="e.g. Botanical Face Wash" required/>
+                                </div>
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select name="categoryId" id="categorySelect" onchange="toggleCategorySpecificFields()">
+                                        <option value="">— Select —</option>
+                                        <option th:each="cat : ${categories}"
+                                                th:value="${cat.categoryId}"
+                                                th:data-name="${cat.name}"
+                                                th:text="${cat.name}"
+                                                th:selected="${product.category != null and product.category.categoryId == cat.categoryId}"></option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Price (₹) *</label>
+                                    <input type="number" name="price" th:value="${product.price}" placeholder="0.00" step="0.01" min="0" required/>
+                                </div>
+                                <div class="form-group">
+                                    <label>Discount Price (₹) <small>(Leave blank if no discount)</small></label>
+                                    <input type="number" name="discountPrice" th:value="${product.discountPrice}" placeholder="0.00" step="0.01" min="0"/>
+                                </div>
+                                <div class="form-group">
+                                    <label>Stock Quantity</label>
+                                    <input type="number" name="stockQuantity" th:value="${product.stockQuantity ?: 0}" placeholder="0" min="0"/>
+                                </div>
+                                <div class="form-group">
+                                    <label>Short Subtitle</label>
+                                    <input type="text" name="subtitle" th:value="${product.subtitle}" placeholder="One-line product teaser"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Specific Selections (Skin/Hair) -->
+                    <div class="card pf-card" id="skinCareFields" style="display: none;">
+                        <div class="card-header"><h2><i class="bi bi-stars"></i> Skin Care Selection</h2></div>
+                        <div class="card-body">
+                            <p class="toggle-hint" style="margin-bottom: 15px;">Select which skin types this product is suitable for:</p>
+                            <div class="type-selection-grid">
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="skinTypes" value="Oily" th:checked="${product.skinType != null and product.skinType.contains('Oily')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-brightness-high"></i>
+                                        <span>Oily</span>
+                                    </div>
+                                </label>
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="skinTypes" value="Dry" th:checked="${product.skinType != null and product.skinType.contains('Dry')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-droplet"></i>
+                                        <span>Dry</span>
+                                    </div>
+                                </label>
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="skinTypes" value="Sensitive" th:checked="${product.skinType != null and product.skinType.contains('Sensitive')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-feather"></i>
+                                        <span>Sensitive</span>
+                                    </div>
+                                </label>
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="skinTypes" value="Combo" th:checked="${product.skinType != null and product.skinType.contains('Combo')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-circle-half"></i>
+                                        <span>Combo</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card pf-card" id="hairCareFields" style="display: none;">
+                        <div class="card-header"><h2><i class="bi bi-wind"></i> Hair Care Selection</h2></div>
+                        <div class="card-body">
+                            <p class="toggle-hint" style="margin-bottom: 15px;">Select which hair types this product is suitable for:</p>
+                            <div class="type-selection-grid">
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="hairTypes" value="Straight" th:checked="${product.hairType != null and product.hairType.contains('Straight')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-dash-lg"></i>
+                                        <span>Straight</span>
+                                    </div>
+                                </label>
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="hairTypes" value="Wavy" th:checked="${product.hairType != null and product.hairType.contains('Wavy')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-activity"></i>
+                                        <span>Wavy</span>
+                                    </div>
+                                </label>
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="hairTypes" value="Curly" th:checked="${product.hairType != null and product.hairType.contains('Curly')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-bezier2"></i>
+                                        <span>Curly</span>
+                                    </div>
+                                </label>
+                                <label class="type-checkbox-card">
+                                    <input type="checkbox" name="hairTypes" value="Coily" th:checked="${product.hairType != null and product.hairType.contains('Coily')}">
+                                    <div class="type-card-content">
+                                        <i class="bi bi-hurricane"></i>
+                                        <span>Coily</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="card pf-card">
+                        <div class="card-header"><h2><i class="bi bi-card-text"></i> Product Details</h2></div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group full">
+                                    <label>Full Description</label>
+                                    <textarea name="description" rows="4" th:text="${product.description}" placeholder="Detailed description..."></textarea>
+                                </div>
+                                <div class="form-group full">
+                                    <label>Ingredients</label>
+                                    <textarea name="ingredients" rows="3" th:text="${product.ingredients}" placeholder="List all ingredients..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Benefits</label>
+                                    <textarea name="benefits" rows="3" th:text="${product.benefits}" placeholder="Key benefits..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>How to Use</label>
+                                    <textarea name="usageInstructions" rows="3" th:text="${product.usageInstructions}" placeholder="Usage instructions..."></textarea>
+                                </div>
+                                <div class="form-group full">
+                                    <label>Warnings / Cautions</label>
+                                    <textarea name="warnings" rows="2" th:text="${product.warnings}" placeholder="Any warnings..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="display:flex; gap:12px; padding-bottom:40px;">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Save Product</button>
+                        <a th:href="@{/admin/products}" class="btn btn-outline">Cancel</a>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Two-column product form layout */
+.pf-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 22px;
+    align-items: start;
+}
+.pf-card { margin-bottom: 20px; }
+
+/* Image preview */
+.img-preview-wrap {
+    width: 100%; aspect-ratio: 1/1;
+    border-radius: 12px; overflow: hidden;
+    background: var(--cream); margin-bottom: 14px;
+    border: 1px solid var(--border);
+    position: relative;
+}
+.img-preview-wrap img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.img-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--text-muted); font-size: 13px;
+}
+
+/* Drop zone */
+.drop-zone {
+    border: 2px dashed rgba(201,168,76,0.4);
+    border-radius: 12px;
+    padding: 20px 14px;
+    text-align: center;
+    background: rgba(201,168,76,0.04);
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+.drop-zone.drag-over {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.10);
+    transform: scale(1.01);
+}
+.drop-icon { font-size: 30px; color: var(--gold); margin-bottom: 8px; display: block; }
+.drop-title { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px; }
+.drop-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.drop-actions { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+.drop-or { font-size: 11px; color: var(--text-muted); }
+.drop-hint { font-size: 11px; color: var(--text-muted); margin-top: 10px; }
+.drop-btn { cursor: pointer; }
+
+/* Toggles */
+.toggle-list { display: flex; flex-direction: column; gap: 0; }
+.toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; cursor: pointer;
+    border-bottom: 1px solid var(--border-light);
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 13.5px; font-weight: 500; color: var(--text-dark); }
+.toggle-hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Custom toggle switch */
+.tb-toggle {
+    appearance: none; -webkit-appearance: none;
+    width: 44px; height: 24px;
+    background: var(--cream); border-radius: 12px;
+    border: 1px solid var(--border);
+    position: relative; cursor: pointer;
+    transition: background 0.25s; flex-shrink: 0;
+}
+.tb-toggle::after {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; top: 2px; left: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: left 0.25s ease;
+}
+.tb-toggle:checked { background: var(--garnet); border-color: var(--garnet); }
+.tb-toggle:checked::after { left: 22px; }
+
+.sub-img-box {
+    display: flex; flex-direction: column; gap: 8px;
+}
+.sub-img-preview {
+    width: 100%; aspect-ratio: 1/1; background: var(--cream);
+    border: 1px solid var(--border); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+}
+.sub-img-preview img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.sub-img-preview i { font-size: 20px; color: var(--gold); }
+
+@media (max-width: 820px) {
+    .pf-layout { grid-template-columns: 1fr; }
+}
+
+/* Type selection grid */
+.type-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+}
+.type-checkbox-card {
+    cursor: pointer;
+}
+.type-checkbox-card input {
+    display: none;
+}
+.type-card-content {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+.type-card-content i {
+    font-size: 20px;
+    color: var(--text-muted);
+}
+.type-card-content span {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.type-checkbox-card input:checked + .type-card-content {
+    border-color: var(--green);
+    background: var(--green-faint);
+    box-shadow: 0 4px 12px rgba(46,125,50,0.12);
+}
+.type-checkbox-card input:checked + .type-card-content i {
+    color: var(--green);
+}
+.type-checkbox-card input:checked + .type-card-content span {
+    color: var(--green);
+}
+</style>
+
+<script>
+function handleFile(input, previewId, placeholderId) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { alert('Image must be under 10 MB'); return; }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        const preview = document.getElementById(previewId);
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        
+        if (placeholderId) {
+            document.getElementById(placeholderId).style.display = 'none';
+        } else {
+            const parent = preview.parentElement;
+            const icon = parent.querySelector('i');
+            if (icon) icon.style.display = 'none';
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function toggleUrlInput() {
+    const area = document.getElementById('urlInputArea');
+    if(area) area.style.display = area.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleCategorySpecificFields() {
+    const select = document.getElementById('categorySelect');
+    const selectedOption = select.options[select.selectedIndex];
+    const categoryName = selectedOption ? (selectedOption.getAttribute('data-name') || selectedOption.text) : '';
+
+    const skinFields = document.getElementById('skinCareFields');
+    const hairFields = document.getElementById('hairCareFields');
+
+    const nameUpper = categoryName.toUpperCase();
+    const isSkin = nameUpper.includes('SKIN') || nameUpper.includes('SKN');
+    const isHair = nameUpper.includes('HAIR');
+
+    if (isSkin) {
+        if(skinFields) skinFields.style.display = 'block';
+        if(hairFields) hairFields.style.display = 'none';
+    } else if (isHair) {
+        if(skinFields) skinFields.style.display = 'none';
+        if(hairFields) hairFields.style.display = 'block';
+    } else {
+        if(skinFields) skinFields.style.display = 'none';
+        if(hairFields) hairFields.style.display = 'none';
+    }
+}
+
+// Run on load
+document.addEventListener('DOMContentLoaded', toggleCategorySpecificFields);
+</script>
+</body>
+</html>

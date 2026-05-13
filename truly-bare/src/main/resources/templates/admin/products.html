@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/layout :: head('Products')}"></head>
+<body>
+
+<div th:replace="~{admin/layout :: sidebar('products')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <span class="page-title"><i class="bi bi-box-seam"></i> Products</span>
+        <a th:href="@{/admin/products/new}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add New Product</a>
+    </div>
+
+    <div class="content-area">
+        <div class="flash-success" th:if="${success}"><i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span></div>
+        <div class="flash-error"   th:if="${error}"><i class="bi bi-exclamation-circle-fill"></i> <span th:text="${error}"></span></div>
+
+        <!-- ── Filter Bar ── -->
+        <form th:action="@{/admin/products}" method="get" id="filterForm" class="filter-bar-card">
+
+            <!-- Search -->
+            <div class="filter-field filter-search">
+                <i class="bi bi-search filter-icon"></i>
+                <input type="text" name="q" id="filterQ"
+                       th:value="${filterQ}"
+                       placeholder="Search by name or subtitle…"
+                       autocomplete="off">
+                <button type="button" class="filter-clear-btn" th:if="${filterQ != null and !filterQ.isEmpty()}"
+                        onclick="document.getElementById('filterQ').value=''; document.getElementById('filterForm').submit();">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+
+            <!-- Category -->
+            <div class="filter-field">
+                <label class="filter-label">Category</label>
+                <select name="categoryId" id="filterCategory" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.categoryId}"
+                            th:text="${cat.name}"
+                            th:selected="${filterCategoryId != null and filterCategoryId == cat.categoryId}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div class="filter-field">
+                <label class="filter-label">Status</label>
+                <select name="status" id="filterStatus" onchange="this.form.submit()">
+                    <option value=""     th:selected="${filterStatus == ''}">All</option>
+                    <option value="active"   th:selected="${filterStatus == 'active'}">● Active</option>
+                    <option value="inactive" th:selected="${filterStatus == 'inactive'}">● Inactive</option>
+                </select>
+            </div>
+
+            <!-- Stock -->
+            <div class="filter-field">
+                <label class="filter-label">Stock</label>
+                <select name="stock" id="filterStock" onchange="this.form.submit()">
+                    <option value=""    th:selected="${filterStock == ''}">All Levels</option>
+                    <option value="ok"  th:selected="${filterStock == 'ok'}">✔ In Stock (≥10)</option>
+                    <option value="low" th:selected="${filterStock == 'low'}">⚠ Low Stock (&lt;10)</option>
+                    <option value="out" th:selected="${filterStock == 'out'}">✕ Sold Out</option>
+                </select>
+            </div>
+
+            <!-- Search button + Reset -->
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i> Search</button>
+                <a th:href="@{/admin/products}" class="btn btn-outline btn-sm"><i class="bi bi-x-circle"></i> Reset</a>
+            </div>
+        </form>
+
+        <!-- ── Active Filter Chips ── -->
+        <div class="filter-chips"
+             th:if="${(filterQ != null and !filterQ.isEmpty()) or filterCategoryId != null or (filterStatus != null and !filterStatus.isEmpty()) or (filterStock != null and !filterStock.isEmpty())}">
+            <span class="chip-label">Filters:</span>
+
+            <span th:if="${filterQ != null and !filterQ.isEmpty()}" class="filter-chip">
+                <i class="bi bi-search"></i>
+                "<span th:text="${filterQ}"></span>"
+            </span>
+
+            <span th:if="${filterCategoryId != null}" class="filter-chip">
+                <i class="bi bi-tag"></i>
+                <span th:each="cat : ${categories}" th:if="${cat.categoryId == filterCategoryId}" th:text="${cat.name}"></span>
+            </span>
+
+            <span th:if="${filterStatus != null and !filterStatus.isEmpty()}" class="filter-chip"
+                  th:text="${filterStatus == 'active' ? '● Active only' : '● Inactive only'}"></span>
+
+            <span th:if="${filterStock != null and !filterStock.isEmpty()}" class="filter-chip"
+                  th:text="${filterStock == 'ok' ? '✔ In Stock' : (filterStock == 'low' ? '⚠ Low Stock' : '✕ Sold Out')}"></span>
+
+            <span class="filter-chip-count">
+                <b th:text="${products.size()}">0</b> result(s)
+            </span>
+        </div>
+
+        <!-- ── Products Table ── -->
+        <div class="card">
+            <div class="card-header">
+                <h2>All Products (<span th:text="${products.size()}">0</span>)</h2>
+                <a th:href="@{/admin/products/new}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Add</a>
+            </div>
+
+            <div th:if="${products.isEmpty()}" class="empty-state-block">
+                <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
+                <p class="empty-title">No products match your filters</p>
+                <p class="empty-sub">Try adjusting or resetting the filters above.</p>
+                <a th:href="@{/admin/products}" class="btn btn-outline" style="margin-top:18px;"><i class="bi bi-x-circle"></i> Clear Filters</a>
+            </div>
+
+            <div th:if="${!products.isEmpty()}" style="overflow-x:auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width:70px; text-align:center;">ID</th>
+                            <th style="width:60px;">Image</th>
+                            <th style="width:200px;">Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${products}">
+                            <td style="text-align:center; vertical-align:middle;">
+                                <span style="display:inline-block; background:var(--pale-white); border:1px solid var(--border); border-radius:8px; padding:4px 8px; font-size:11px; font-weight:700; color:var(--garnet); font-family:monospace; letter-spacing:0.5px;">
+                                    #<span th:text="${p.productId}">0</span>
+                                </span>
+                            </td>
+                            <td>
+                                <img th:src="${p.imageUrl != null and !p.imageUrl.isBlank() ? p.imageUrl : '/assets/images/placeholder.png'}"
+                                     th:alt="${p.name}"
+                                     onerror="this.onerror=null; this.src='/assets/images/placeholder.png';"
+                                     style="width:46px; height:46px; border-radius:10px; object-fit:cover; border:1px solid var(--border); box-shadow:0 2px 6px rgba(92,61,46,0.10);">
+                            </td>
+                            <td style="max-width:200px;">
+                                <div style="font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px;" th:text="${p.name}"></div>
+                                <div th:text="${p.subtitle}" style="font-size:11px; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px;" th:if="${p.subtitle != null}"></div>
+                                <div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+                                    <span th:if="${p.isBestSeller}" title="Best Seller"   style="background:#2ecc71; color:#fff; font-size:9px; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-weight:700;">🔥 BS</span>
+                                    <span th:if="${p.isNew}"        title="New Arrival"   style="background:#e74c3c; color:#fff; font-size:9px; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-weight:700;">✨ NEW</span>
+                                    <span th:if="${p.isClassic}"    title="Classic"       style="background:#9b59b6; color:#fff; font-size:9px; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-weight:700;">🏺 CL</span>
+                                    <span th:if="${p.isFeatured}"   title="Featured"      style="background:#f1c40f; color:#5c3d2e; font-size:9px; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-weight:700;">⭐ FEAT</span>
+                                    <span th:if="${ritualProductIds != null and ritualProductIds.contains(p.productId)}" 
+                                          title="In Ritual Edit" style="background:var(--gold); color:#fff; font-size:9px; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-weight:700;">🌿 RITUAL</span>
+                                    <span th:if="${p.forceSoldOut ?: false}" title="Forced Sold Out" style="background:#2c3e50; color:#fff; font-size:9px; padding:2px 6px; border-radius:4px; text-transform:uppercase; font-weight:700;">🚫 SOLD</span>
+                                </div>
+                            </td>
+                            <td class="muted" th:text="${p.category != null ? p.category.name : '—'}">—</td>
+                            <td>
+                                <span style="font-family:var(--font-serif); font-weight:600; font-size:15px;">₹<span th:text="${p.price != null ? #numbers.formatDecimal(p.price, 0, 'COMMA', 2, 'POINT') : '0.00'}"></span></span>
+                            </td>
+                            <td>
+                                <span th:if="${(p.forceSoldOut ?: false) or (p.stockQuantity != null and p.stockQuantity <= 3)}"
+                                      class="badge-status red" style="background:#e74c3c; color:white; border:none; padding:4px 10px;">
+                                    <i class="bi bi-slash-circle-fill"></i> SOLD OUT (<span th:text="${p.stockQuantity}">0</span>)
+                                </span>
+                                <span th:if="${!(p.forceSoldOut ?: false) and p.stockQuantity != null and p.stockQuantity > 3 and p.stockQuantity < 10}"
+                                      class="badge-status" style="background:#f39c12; color:white; border:none; padding:4px 10px;">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> LOW (<span th:text="${p.stockQuantity}">0</span>)
+                                </span>
+                                <span th:if="${!(p.forceSoldOut ?: false) and (p.stockQuantity == null or p.stockQuantity >= 10)}"
+                                      class="badge-status green" th:text="${p.stockQuantity ?: 0}">100</span>
+                            </td>
+                            <td>
+                                <span th:if="${p.isActive}"   class="badge-status green">● Active</span>
+                                <span th:unless="${p.isActive}" class="badge-status red">● Inactive</span>
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                    <a th:href="@{/admin/products/edit/{id}(id=${p.productId})}" class="btn btn-outline btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+                                    <form th:action="@{/admin/products/delete/{id}(id=${p.productId})}" method="post"
+                                          onsubmit="return confirm('Delete this product? This cannot be undone.')">
+                                        <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash3"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* ── Filter Bar ── */
+.filter-bar-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(92,61,46,0.05);
+}
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 160px;
+    flex: 1;
+}
+.filter-search {
+    position: relative;
+    min-width: 220px;
+    flex: 2;
+}
+.filter-search .filter-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+    pointer-events: none;
+}
+.filter-search input {
+    padding: 9px 36px 9px 34px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--bg, #fafaf8);
+    color: var(--navy);
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-search input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(192,160,98,0.12); outline: none; }
+.filter-clear-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+}
+.filter-clear-btn:hover { color: var(--navy); }
+.filter-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.filter-field select {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--bg, #fafaf8);
+    color: var(--navy);
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: auto;
+}
+.filter-field select:focus { border-color: var(--gold); outline: none; }
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-top: 18px;
+}
+
+/* ── Active Filter Chips ── */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.chip-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(192,160,98,0.10);
+    border: 1px solid rgba(192,160,98,0.30);
+    color: var(--navy);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+.filter-chip-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+</style>
+
+</body>
+</html>

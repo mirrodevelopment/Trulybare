@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title
+        th:text="${activeCategory != null} ? 'Truly Bare | ' + ${activeCategory.name} : 'Truly Bare | Our Collection'">
+        Truly Bare | Our Collection</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/products.css}">
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+    <main>
+        <section class="products-hero"
+            th:classappend="${activeCategory != null} ? 'hero-' + ${#strings.toLowerCase(#strings.replace(activeCategory.name, ' ', '-'))} : ''">
+            <div class="container">
+                <div class="hero-content animate-fade-up">
+                    <!-- When a specific category is selected -->
+                    <th:block th:if="${activeCategory != null}">
+                        <span class="hero-badge animate-fade-up"
+                              th:text="${activeCategory.badgeText != null and !#strings.isEmpty(activeCategory.badgeText) ? activeCategory.badgeText : 'Truly Bare Collection'}">
+                              Vitality Collection</span>
+                        <h1 class="hero-title animate-fade-up">
+                            <span th:text="${activeCategory.name}"
+                                  style="display:block; font-style:normal; color: var(--bold-red); -webkit-text-fill-color: var(--bold-red);">
+                                  Supplements</span>
+                        </h1>
+                        <p class="hero-subtitle"
+                            th:if="${activeCategory.description != null and !#strings.isEmpty(activeCategory.description)}"
+                            th:text="${activeCategory.description}">Category description.</p>
+                    </th:block>
+                    <!-- Default view when no specific category -->
+                    <th:block th:if="${activeCategory == null}">
+                        <span class="hero-badge">Curated Formulations</span>
+                        <h1 class="hero-title">Our <em>Full</em> Collection of <span
+                                style="color: #8B1A1A; -webkit-text-fill-color: #8B1A1A; font-family: var(--font-brand);">TRULY
+                                BARE</span></h1>
+                        <p class="hero-subtitle">Every Truly Bare formulation is crafted with meticulous attention to
+                            detail, balancing botanical excellence with clinical efficacy.</p>
+                    </th:block>
+                </div>
+            </div>
+        </section>
+
+        <section class="products-grid-section">
+            <div class="container">
+                <!-- Filters -->
+                <div class="filters-bar animate-fade-up">
+                    <div class="category-filters">
+                        <!-- Global Category View (Root Category = null) -->
+                        <th:block th:if="${rootCategory == null}">
+                            <a th:href="@{/products}" class="filter-btn"
+                                th:classappend="${param.category == null} ? 'active' : ''">All Products</a>
+                            <th:block th:each="cat : ${categories}">
+                                <a th:href="@{/products(category=${cat.name})}" class="filter-btn"
+                                    th:if="${not (param.category != null and #strings.equals(param.category[0], 'COSMETICS') and (cat.name == 'SUPPLEMENTS' or cat.name == 'WEIGHT LOSS'))}"
+                                    th:classappend="${#strings.equals(param.category, cat.name)} ? 'active' : ''"
+                                    th:text="${cat.name}">Category</a>
+                            </th:block>
+                        </th:block>
+
+                        <!-- Isolated View for Specific Branches (Cosmetics) -->
+                        <th:block th:if="${rootCategory != null}">
+                            <a th:href="@{'/products/category/' + ${rootCategory.categoryId}}" class="filter-btn"
+                                th:classappend="${activeCategory != null and activeCategory.categoryId == rootCategory.categoryId} ? 'active' : ''"
+                                th:text="${rootCategory.name}">Parent</a>
+                            <th:block th:each="cat : ${categories}">
+                                <a th:href="@{'/products/category/' + ${cat.categoryId}}" class="filter-btn"
+                                    th:classappend="${activeCategory != null and activeCategory.categoryId == cat.categoryId} ? 'active' : ''"
+                                    th:text="${cat.name}">Subcategory</a>
+                            </th:block>
+                        </th:block>
+
+                    </div>
+                </div>
+
+                <!-- Grouped Grid View (For Parent Categories OR Shop All Page) -->
+                <th:block
+                    th:if="${(activeCategory == null and isSearch == null) or (activeCategory != null and rootCategory != null and activeCategory.categoryId == rootCategory.categoryId)} and ${categories != null and !categories.isEmpty()}">
+                    <div th:each="subCat : ${categories}" class="subcategory-section" style="margin-bottom: 70px;"
+                         th:unless="${subCat.name == 'SUPPLEMENTS' or subCat.name == 'WEIGHT LOSS'}">
+                        <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:45px;">
+                            <h2 class="subcategory-title">
+                                <span th:text="${subCat.name}">Subcategory Name</span>
+                            </h2>
+
+                            <!-- Editorial Category Notes -->
+                            <p class="subcategory-note" th:if="${subCat.name == 'SKIN CARE'}">
+                                Elevate your daily ritual with botanical-infused elixirs designed to restore balance and
+                                unveil your natural radiance.
+                            </p>
+                            <p class="subcategory-note" th:if="${subCat.name == 'HAIR CARE'}">
+                                Nurture your crown with nutrient-dense formulas that strengthen, hydrate, and celebrate
+                                the unique texture of your hair.
+                            </p>
+                        </div>
+
+                        <div class="product-grid-premium">
+                            <article class="product-card-premium animate-fade-up" th:each="product : ${products}"
+                                th:if="${product.category != null and product.category.categoryId == subCat.categoryId}"
+                                th:data-product-id="${product.productId}"
+                                th:data-name="${product.name}"
+                                th:data-subtitle="${product.subtitle}"
+                                th:data-desc="${product.description}"
+                                th:data-price="${product.discountPrice != null ? product.discountPrice : product.price}"
+                                th:data-original-price="${product.price}"
+                                th:data-discount-price="${product.discountPrice}"
+                                th:data-img="${product.imageUrl}"
+                                th:data-sub-img-1="${product.subImageUrl1}"
+                                th:data-sub-img-2="${product.subImageUrl2}"
+                                th:data-sub-img-3="${product.subImageUrl3}"
+                                th:data-sub-img-4="${product.subImageUrl4}"
+                                th:data-ingredients="${product.ingredients}"
+                                th:data-benefits="${product.benefits}"
+                                th:data-usage="${product.usageInstructions}"
+                                th:data-warnings="${product.warnings}"
+                                th:data-category="${product.category != null ? product.category.name : ''}"
+                                th:data-parent-category="${product.category != null and product.category.parentCategory != null ? product.category.parentCategory.name : ''}"
+                                th:data-skin-type="${product.skinType}"
+                                th:data-hair-type="${product.hairType}"
+                                th:data-stock="${product.stockQuantity}">
+                                <div class="card-image-wrap">
+                                    <div class="card-badges">
+                                        <span th:if="${product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                        <span th:if="${product.isNew}" class="card-badge new">New</span>
+                                        <span th:if="${product.isClassic}" class="card-badge classic">Classic</span>
+                                    </div>
+                                    <a th:href="@{'/product/' + ${product.productId}}">
+                                        <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                            th:alt="${product.name}"
+                                            th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''">
+                                    </a>
+                                </div>
+                                <div class="card-info">
+                                    <h3 th:text="${product.name}">Product Name</h3>
+                                    <p class="card-desc" th:text="${product.subtitle != null ? product.subtitle : product.description}" title="Click to view full details">Description</p>
+                                    <div class="card-footer">
+                                        <span class="p-price" th:classappend="${product.discountPrice != null ? 'discounted' : ''}"
+                                            th:text="'₹' + ${#numbers.formatDecimal(product.discountPrice != null ? product.discountPrice : product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                        
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                                                  style="font-size: 9px; color: #f39c12; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                                <i class="bi bi-exclamation-triangle-fill" style="font-size: 10px;"></i> Limited
+                                            </span>
+                                            <span th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                                  style="font-size: 9px; color: #e74c3c; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                                <i class="bi bi-slash-circle-fill" style="font-size: 10px;"></i> Sold Out
+                                            </span>
+                                            
+                                            <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="card-add-btn"
+                                                    th:onclick="'addToCart(this, ' + ${product.discountPrice != null ? product.discountPrice : product.price} + '); return false;'">
+                                                <i class="bi bi-plus-lg"></i>
+                                            </button>
+                                            <button th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" class="card-add-btn" disabled 
+                                                    style="opacity: 0.6; cursor: not-allowed; background: #95a5a6; border: none;">
+                                                <i class="bi bi-slash-circle"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </th:block>
+
+                <!-- Standard Unified Grid -->
+                <th:block
+                    th:if="${isSearch != null or (activeCategory != null and (rootCategory == null or activeCategory.categoryId != rootCategory.categoryId)) or categories == null or categories.isEmpty()}">
+                    <div class="product-grid-premium" id="productGrid">
+                        <article class="product-card-premium animate-fade-up" th:each="product : ${products}"
+                            th:data-product-id="${product.productId}"
+                            th:data-name="${product.name}"
+                            th:data-subtitle="${product.subtitle}"
+                            th:data-desc="${product.description}"
+                            th:data-price="${product.discountPrice != null ? product.discountPrice : product.price}"
+                            th:data-original-price="${product.price}"
+                            th:data-discount-price="${product.discountPrice}"
+                            th:data-img="${product.imageUrl}"
+                            th:data-sub-img-1="${product.subImageUrl1}"
+                            th:data-sub-img-2="${product.subImageUrl2}"
+                            th:data-sub-img-3="${product.subImageUrl3}"
+                            th:data-sub-img-4="${product.subImageUrl4}"
+                            th:data-ingredients="${product.ingredients}"
+                            th:data-benefits="${product.benefits}"
+                            th:data-usage="${product.usageInstructions}"
+                            th:data-warnings="${product.warnings}"
+                            th:data-category="${product.category != null ? product.category.name : ''}"
+                            th:data-parent-category="${product.category != null and product.category.parentCategory != null ? product.category.parentCategory.name : ''}"
+                            th:data-skin-type="${product.skinType}"
+                            th:data-hair-type="${product.hairType}">
+                            <div class="card-image-wrap">
+                                <div class="card-badges">
+                                    <span th:if="${product.isBestSeller}" class="card-badge bs">Best Seller</span>
+                                    <span th:if="${product.isNew}" class="card-badge new">New</span>
+                                    <span th:if="${product.isClassic}" class="card-badge classic">Classic</span>
+                                </div>
+                                <a th:href="@{'/product/' + ${product.productId}}">
+                                    <img th:src="${product.imageUrl != null and not #strings.isEmpty(product.imageUrl)} ? ${product.imageUrl} : @{/assets/images/logo.png}"
+                                        th:alt="${product.name}"
+                                        th:class="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)} ? 'fallback-logo' : ''">
+                                </a>
+                            </div>
+                            <div class="card-info">
+                                <h3 th:text="${product.name}">Product Name</h3>
+                                <p class="card-desc" th:text="${product.subtitle != null ? product.subtitle : product.description}" title="Click to view full details">Description</p>
+                                <div class="card-footer">
+                                    <div class="price-stack" style="display: flex; flex-direction: column; align-items: flex-start;">
+                                        <span class="p-price original-strike" th:if="${product.discountPrice != null}"
+                                            th:text="'₹' + ${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                        <span class="p-price" th:classappend="${product.discountPrice != null ? 'discounted' : ''}"
+                                            th:text="'₹' + ${#numbers.formatDecimal(product.discountPrice != null ? product.discountPrice : product.price, 0, 'COMMA', 0, 'POINT')}">₹0</span>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3 and (product.stockQuantity ?: 0) < 10}" 
+                                              style="font-size: 9px; color: #f39c12; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                            <i class="bi bi-exclamation-triangle-fill" style="font-size: 10px;"></i> Limited
+                                        </span>
+                                        <span th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" 
+                                              style="font-size: 9px; color: #e74c3c; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+                                            <i class="bi bi-slash-circle-fill" style="font-size: 10px;"></i> Sold Out
+                                        </span>
+                                        
+                                        <button th:if="${!(product.forceSoldOut ?: false) and (product.stockQuantity ?: 0) > 3}" class="card-add-btn"
+                                            th:onclick="'addToCart(this, ' + ${product.discountPrice != null ? product.discountPrice : product.price} + '); return false;'">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </button>
+                                        <button th:if="${(product.forceSoldOut ?: false) or (product.stockQuantity ?: 0) <= 3}" class="card-add-btn" disabled 
+                                                style="opacity: 0.6; cursor: not-allowed; background: #95a5a6; border: none;">
+                                            <i class="bi bi-slash-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Empty State (No Products Found) -->
+                        <div th:if="${products.isEmpty() and (categories == null or categories.isEmpty())}"
+                            class="empty-products">
+                            <i class="bi bi-search"></i>
+                            <h3>No products found</h3>
+                            <p>We couldn't find any formulations matching your selection.</p>
+                            <a th:href="@{/products}" class="btn-primary">View All Products</a>
+                        </div>
+
+                        <!-- Directory State (For Parent Categories like Cosmetics) -->
+                        <div th:if="${products.isEmpty() and subCategories != null and !subCategories.isEmpty()}"
+                            class="directory-container animate-fade-up">
+                            <div class="directory-header">
+                                <span class="directory-overline">Explore Truly Bare Rituals</span>
+                                <h3 class="directory-title">Curated Collections</h3>
+                                <p class="directory-subtitle">Select a specialised ritual to view our botanical
+                                    formulations.</p>
+                            </div>
+
+                            <div class="directory-grid">
+                                <a th:each="subCat : ${subCategories}" th:href="@{/products(category=${subCat.name})}"
+                                    class="directory-card">
+                                    <div class="directory-card-bg"></div>
+                                    <div class="directory-card-content">
+                                        <i
+                                            th:class="${subCat.name == 'SKIN CARE'} ? 'bi bi-stars' : 'bi bi-droplet'"></i>
+                                        <h4 th:text="${subCat.name}">Subcategory Name</h4>
+                                        <span class="directory-card-action">View Collection <i
+                                                class="bi bi-arrow-right"></i></span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div> <!-- closes product-grid -->
+                </th:block> <!-- closes Standard Unified Grid -->
+            </div> <!-- closes container -->
+        </section>
+    </main>
+
+
+    <th:block th:replace="~{fragments :: quick_view_modal}"></th:block>
+
+    <script th:src="@{/js/home.js}"></script>
+</body>
+
+</html>

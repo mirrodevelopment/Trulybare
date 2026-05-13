@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Created-By: IntelliJ IDEA
+Built-By: sivas
+Build-Jdk: Oracle OpenJDK 21.0.9
+Implementation-Title: Truly Bare
+Implementation-Version: 0.0.1-SNAPSHOT
+Implementation-Vendor-Id: com.trulybare
+Main-Class: ${start-class}
+

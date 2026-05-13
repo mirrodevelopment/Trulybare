@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Truly Bare | Cart</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/cart.css}">
+</head>
+
+<body>
+
+    <th:block th:replace="~{fragments :: announcement_bar}"></th:block>
+    <th:block th:replace="~{fragments :: main_header}"></th:block>
+    <th:block th:replace="~{fragments :: mobile_nav}"></th:block>
+
+
+    <main class="cart-page">
+        <div class="container">
+
+            <!-- Heading -->
+            <div class="cart-heading-section animate-fade-up">
+                <div class="gold-divider"></div>
+                <h1>Your Cart</h1>
+                <p>Review your selection</p>
+            </div>
+
+            <!-- ============ CART ITEMS ============ -->
+            <!-- JS populates this from localStorage; Thymeleaf items shown if backend provides them -->
+            <div class="cart-layout" id="cartLayout" style="display:none;">
+
+                <!-- LEFT: Items -->
+                <div class="cart-items-section">
+                    <p class="cart-section-label">Selected Items</p>
+                    <!-- JS injects .cart-item divs here -->
+                    <div id="cartItemsContainer">
+
+                        <!-- Thymeleaf server-side items (if cart is populated via backend login) -->
+                        <div class="cart-item animate-fade-up"
+                            th:each="item : ${cart != null ? cart.items : T(java.util.Collections).EMPTY_LIST}"
+                            th:data-price="${item.price}" th:data-id="${item.productId}">
+
+                            <div class="cart-item-img">
+                                <img th:src="${item.productImage}" th:alt="${item.productName}" alt="Product">
+                            </div>
+
+                            <div class="cart-item-details">
+                                <span class="cart-item-number" th:text="${item.productId}">Nº 01</span>
+                                <h3 class="cart-item-name" th:text="${item.productName}">Product Name</h3>
+                                <p class="cart-item-desc">Luxury botanicals</p>
+
+                                <div class="cart-item-footer">
+                                    <div class="cart-item-price" th:text="'\u20b9' + ${item.price}">\u20b90</div>
+
+                                    <div class="qty-stepper">
+                                        <button class="qty-btn qty-minus" type="button" aria-label="Decrease">−</button>
+                                        <span class="qty-display" th:text="${item.quantity}">1</span>
+                                        <button class="qty-btn qty-plus" type="button" aria-label="Increase">+</button>
+                                    </div>
+
+                                    <button class="remove-btn" type="button">
+                                        <i class="bi bi-x"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- RIGHT: Order Summary -->
+                <aside class="order-summary animate-fade-up">
+                    <h2 class="summary-title">Order Summary</h2>
+                    <p class="summary-sub">Your selection</p>
+                    <div class="gold-divider" style="margin:0 0 20px;"></div>
+
+                    <div class="summary-line">
+                        <span class="label">Subtotal</span>
+                        <span class="value" id="cart-subtotal">₹0</span>
+                    </div>
+                    <div class="summary-line">
+                        <span class="label">Discount</span>
+                        <span class="value" id="cart-discount">—</span>
+                    </div>
+                    <div class="summary-line">
+                        <span class="label">Shipping</span>
+                        <span class="value" style="color:#4CAF50;">FREE</span>
+                    </div>
+                    <div class="summary-line total">
+                        <span class="label">Total</span>
+                        <span class="value" id="cart-total">₹0</span>
+                    </div>
+
+                    <!-- Loyalty Points Info (Optional) -->
+                    <div style="margin-bottom: 20px; font-size: 12px; color: var(--text-muted); text-align: center;">
+                        <i class="bi bi-star-fill" style="color: var(--sapphire-gold);"></i>
+                        Redeem your loyalty points at checkout for extra savings.
+                    </div>
+
+                    <!-- Checkout Button -->
+                    <a th:href="@{/checkout}" href="/checkout" class="btn-checkout">
+                        <i class="bi bi-lock"></i> Proceed to Checkout
+                    </a>
+
+                    <a th:href="@{/home}" href="/home" class="continue-shopping">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
+
+                    <!-- Trust Badges -->
+                    <div class="trust-badges">
+                        <div class="trust-badge">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Secure, encrypted checkout</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            <span>Free 7-day returns</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="bi bi-truck"></i>
+                            <span>Complimentary shipping over ₹2,500</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- ============ EMPTY CART STATE ============ -->
+            <div id="cartEmpty" class="cart-empty animate-fade-up">
+                <i class="bi bi-bag cart-empty-icon"></i>
+                <h2>Your Cart is Empty</h2>
+                <p>You haven't added any formulations yet.<br>Discover our collection of extraordinary skincare.</p>
+                <a th:href="@{/home}" href="/home" class="btn-checkout"
+                    style="max-width:260px;margin:0 auto;display:flex;justify-content:center;">
+                    <i class="bi bi-grid"></i> Explore Collection
+                </a>
+            </div>
+
+    </main>
+
+
+    <script th:src="@{/js/cart.js}"></script>
+    <script th:src="@{/js/home.js}"></script>
+
+    <th:block th:replace="~{fragments :: main_footer}"></th:block>
+
+</body>
+
+</html>

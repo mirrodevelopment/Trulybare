@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Legal | Truly Bare</title>
+    <th:block th:replace="~{fragments :: header_head}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/legal.css}">
+
+</head>
+
+<body>
+
+    <div class="legal-wrapper">
+        <div class="brand-header">
+            <img th:src="@{/assets/images/logo.png}" src="/assets/images/logo.png" alt="Truly Bare">
+            <h2>Truly Bare</h2>
+            <div class="brand-tagline">Luxury Botanical Skincare</div>
+        </div>
+
+        <div class="back-nav">
+            <a href="javascript:void(0)" onclick="history.back()" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+
+        <div class="legal-tabs">
+            <div class="legal-tab active" onclick="switchTab('terms')">
+                <i class="bi bi-file-text"></i> Terms & Conditions
+            </div>
+            <div class="legal-tab" onclick="switchTab('privacy')">
+                <i class="bi bi-shield-lock"></i> Privacy Policy
+            </div>
+            <div class="legal-tab" onclick="switchTab('accessibility')">
+                <i class="bi bi-person-wheelchair"></i> Accessibility
+            </div>
+        </div>
+
+        <div class="legal-card">
+            <!-- TERMS SECTION -->
+            <div id="terms-section" class="section-content active">
+                <div class="card-header">
+                    <h1>Terms & Conditions</h1>
+                    <div class="effective-date">Effective Date: April 2026 <span class="date-sep">✦</span> Last Updated:
+                        April 2026</div>
+                </div>
+                <div class="diamond-sep">✦</div>
+                <div class="intro-quote">
+                    By accessing or using Truly Bare, you agree to be bound by these Terms and Conditions. Please read
+                    them carefully before creating an account.
+                </div>
+                <div class="content-body">
+                    <h3><span>1</span> Acceptance of Terms</h3>
+                    <p>By creating an account or placing an order with Truly Bare, you confirm that you are at least 18
+                        years of age and agree to these Terms and Conditions in full.</p>
+                    <h3><span>2</span> Product Use</h3>
+                    <p>Our formulations are artisanal and high-potency. We recommend a patch test before regular use.
+                        Truly Bare is not liable for individual skin reactions.</p>
+                    <h3><span>3</span> Intellectual Property</h3>
+                    <p>All brand identity, formulations, and illustrations are the exclusive property of Truly Bare.</p>
+                </div>
+            </div>
+
+            <!-- PRIVACY SECTION -->
+            <div id="privacy-section" class="section-content">
+                <div class="card-header">
+                    <h1>Privacy Policy</h1>
+                    <div class="effective-date">Effective Date: April 2026 <span class="date-sep">✦</span> Last Updated:
+                        April 2026</div>
+                </div>
+                <div class="diamond-sep">✦</div>
+                <div class="intro-quote">
+                    At Truly Bare, your privacy is as sacred as your skincare ritual. We are committed to protecting the
+                    sanctuary of your personal data.
+                </div>
+                <div class="content-body">
+                    <h3><span>1</span> Information Sanctuary</h3>
+                    <p>We collect personal information that you provide directly to us when you create an account,
+                        purchase formulations, or join our newsletter.</p>
+                    <h3><span>2</span> Purpose of Path</h3>
+                    <p>Your data is used solely to enhance your experience with Truly Bare. We use it to fulfill orders
+                        and communicate ritual guides.</p>
+                    <h3><span>3</span> Third-Party Essence</h3>
+                    <p>We never sell your data. We only share essential information with trusted partners who help us
+                        deliver our products, such as secure payment gateways.</p>
+                </div>
+            </div>
+
+            <!-- ACCESSIBILITY SECTION -->
+            <div id="accessibility-section" class="section-content">
+                <div class="card-header">
+                    <h1>Accessibility</h1>
+                    <div class="effective-date">Effective Date: April 2026 <span class="date-sep">✦</span> Last Updated:
+                        April 2026</div>
+                </div>
+                <div class="diamond-sep">✦</div>
+                <div class="intro-quote">
+                    Truly Bare is committed to ensuring that our digital sanctuary is accessible to everyone, regardless
+                    of ability or technology.
+                </div>
+                <div class="content-body">
+                    <h3><span>1</span> Inclusive Design</h3>
+                    <p>We strive to adhere to WCAG 2.1 Level AA standards, ensuring our site is navigable via screen
+                        readers and keyboard commands.</p>
+                    <h3><span>2</span> Visual Clarity</h3>
+                    <p>Our palette and typography are chosen for high contrast and readability, preserving the elegance
+                        of our brand while prioritizing clarity.</p>
+                    <h3><span>3</span> Continuous Care</h3>
+                    <p>If you encounter any barriers in our digital boutique, please contact our concierge. We are
+                        constantly evolving to be more inclusive.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Update tabs
+            const tabs = document.querySelectorAll('.legal-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+
+            // Update content
+            const sections = document.querySelectorAll('.section-content');
+            sections.forEach(s => s.classList.remove('active'));
+
+            if (tab === 'terms') {
+                tabs[0].classList.add('active');
+                document.getElementById('terms-section').classList.add('active');
+            } else if (tab === 'privacy') {
+                tabs[1].classList.add('active');
+                document.getElementById('privacy-section').classList.add('active');
+            } else if (tab === 'accessibility') {
+                tabs[2].classList.add('active');
+                document.getElementById('accessibility-section').classList.add('active');
+            }
+
+            // Update URL hash without jumping
+            history.replaceState(null, null, '#' + tab);
+        }
+
+        // Initialize from hash
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash === 'privacy') {
+                switchTab('privacy');
+            } else if (hash === 'accessibility') {
+                switchTab('accessibility');
+            } else {
+                switchTab('terms');
+            }
+        });
+    </script>
+</body>
+
+</html>

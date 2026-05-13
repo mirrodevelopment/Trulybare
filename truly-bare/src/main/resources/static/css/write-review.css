@@ -1,0 +1,426 @@
+/* ================================================== */
+/* WRITE REVIEW — Luxury Customer Reflection          */
+/* ================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Playfair+Display:wght@400;500&family=Inter:wght@200;300;400;500&display=swap');
+
+:root {
+    --bg-pearl:      #FAF8F5;
+    --gold:          #C9A84C;
+    --gold-light:    #E2C76B;
+    --bold-red:      #8B1A1A;
+    --deep-red:      #6B0F0F;
+    --text-dark:     #1C1C1A;
+    --text-medium:   #4A4845;
+    --text-muted:    #8E8D8A;
+    --border:        rgba(201, 168, 76, 0.15);
+    --font-serif:    'Cormorant Garamond', serif;
+    --font-display:  'Playfair Display', serif;
+    --font-sans:     'Inter', sans-serif;
+    --t:             0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font-sans);
+    font-weight: 300;
+    background: linear-gradient(160deg, #FAF6F0 0%, #F5EDE2 50%, #FBF8F3 100%);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 65% 60% at 15% 20%, rgba(232,196,196,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 45% at 80% 80%, rgba(201,168,76,0.09) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+* { position: relative; z-index: 1; }
+
+/* ── Brand Header ── */
+.brand-header {
+    padding: 28px 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(250, 248, 245, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.brand-logo {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 18px;
+    letter-spacing: 5px;
+    text-decoration: none;
+    color: var(--gold);
+    text-transform: uppercase;
+}
+
+.brand-logo .initial {
+    color: var(--bold-red);
+    font-weight: 700;
+    font-size: 1.2em;
+}
+
+/* ── Review Wrapper ── */
+.review-wrapper {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+/* ── Review Card ── */
+.review-card {
+    background: rgba(250, 248, 245, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    width: 100%;
+    max-width: 620px;
+    border-radius: 24px;
+    padding: 56px 52px;
+    box-shadow: 0 24px 80px rgba(28, 28, 26, 0.06),
+                inset 0 1px 0 rgba(250, 248, 245, 0.95);
+    border: 1px solid rgba(201, 168, 76, 0.12);
+    animation: cardRise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    position: relative;
+    overflow: hidden;
+}
+
+.review-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+@keyframes cardRise {
+    0%   { opacity: 0; transform: translateY(28px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Title ── */
+.review-title {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.review-title h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(24px, 4vw, 32px);
+    letter-spacing: -0.3px;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+/* Decorative divider */
+.review-title-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px auto;
+    width: 160px;
+}
+.review-title-divider::before,
+.review-title-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+}
+.review-title-divider::after {
+    background: linear-gradient(270deg, transparent, var(--gold));
+}
+.review-title-divider-dot {
+    width: 5px; height: 5px;
+    background: var(--gold);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.review-title p {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-style: italic;
+    font-family: var(--font-serif);
+    line-height: 1.7;
+}
+
+/* ── Product Context ── */
+.product-meta {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 20px;
+    background: rgba(249, 246, 242, 0.8);
+    border-radius: 14px;
+    margin-bottom: 36px;
+    border: 1px solid var(--border);
+}
+
+.product-img {
+    width: 72px; height: 72px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: var(--bg-pearl);
+    border: 1px solid rgba(201,168,76,0.15);
+    flex-shrink: 0;
+}
+
+.product-info h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 400;
+    margin-bottom: 5px;
+    color: var(--text-dark);
+}
+
+.product-info span {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* ── Form ── */
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* Star Rating */
+.rating-section {
+    text-align: center;
+}
+
+.rating-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+    font-weight: 500;
+}
+
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 8px;
+}
+
+.star-rating input { display: none; }
+
+.star-rating label {
+    font-size: 36px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: var(--gold);
+}
+
+.star-rating label:hover { transform: scale(1.15) rotate(-5deg); }
+.star-rating label:active { transform: scale(0.9); }
+
+/* Input Groups */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-group label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.modern-textarea {
+    width: 100%;
+    min-height: 140px;
+    padding: 18px;
+    border: 1.5px solid rgba(201,168,76,0.18);
+    border-radius: 12px;
+    outline: none;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text-dark);
+    resize: vertical;
+    transition: border-color var(--t), box-shadow var(--t);
+    background: rgba(250, 248, 245, 0.7);
+    line-height: 1.7;
+}
+
+.modern-textarea::placeholder { color: rgba(100, 95, 90, 0.4); }
+
+.modern-textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.08);
+    background: rgba(250, 248, 245, 0.9);
+}
+
+/* User Info */
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.user-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.user-detail span {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.user-detail strong {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* ── Submit Button ── */
+.btn-submit {
+    background: var(--bold-red);
+    color: var(--bg-pearl);
+    border: none;
+    padding: 17px 40px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all var(--t);
+    text-transform: uppercase;
+    margin-top: 4px;
+    box-shadow: 0 8px 28px rgba(139,26,26,0.22);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.btn-submit::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.55s ease;
+}
+
+.btn-submit:hover {
+    background: var(--deep-red);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(139,26,26,0.30);
+}
+
+.btn-submit:hover::before { transform: translateX(100%); }
+
+.btn-back {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    text-decoration: none;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    transition: color var(--t);
+}
+
+.btn-back:hover { color: var(--bold-red); }
+
+/* ── Success Overlay ── */
+.success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(250, 248, 245, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 2000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+}
+
+.success-overlay.active { display: flex; }
+
+.success-icon {
+    font-size: 64px;
+    color: var(--gold);
+    margin-bottom: 28px;
+    animation: iconPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s both;
+}
+
+@keyframes iconPop {
+    0%  { transform: scale(0); opacity: 0; }
+    80% { transform: scale(1.12); }
+    100%{ transform: scale(1); opacity: 1; }
+}
+
+.success-msg h2 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    color: var(--text-dark);
+}
+
+.success-msg p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 400px;
+    line-height: 1.75;
+    font-style: italic;
+    font-family: var(--font-serif);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .review-card { padding: 36px 24px; border-radius: 16px; }
+    .review-wrapper { padding: 24px 16px; }
+    .review-title h1 { font-size: 24px; }
+    .star-rating label { font-size: 30px; }
+}
